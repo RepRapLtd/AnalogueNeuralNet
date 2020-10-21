@@ -1,0 +1,124 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L adafruit-new:LED3MM LED1
+U 1 1 5F8F0859
+P 4175 3950
+F 0 "LED1" H 4252 3942 45  0000 L CNN
+F 1 "425nm UV" H 4225 3800 45  0000 L CNN
+F 2 "adafruit-new_LED3MM" H 4205 4100 20  0001 C CNN
+F 3 "" H 4175 3950 50  0001 C CNN
+	1    4175 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Q_Photo_NPN Q1
+U 1 1 5F8F11A5
+P 3575 4000
+F 0 "Q1" H 3900 4075 50  0000 R CNN
+F 1 "SFH 309" H 4050 3875 50  0000 R CNN
+F 2 "" H 3775 4100 50  0001 C CNN
+F 3 "~" H 3575 4000 50  0001 C CNN
+	1    3575 4000
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	4175 4200 3825 4200
+$Comp
+L power:GND #PWR0101
+U 1 1 5F8F3B4D
+P 3825 4200
+F 0 "#PWR0101" H 3825 3950 50  0001 C CNN
+F 1 "GND" H 3830 4027 50  0000 C CNN
+F 2 "" H 3825 4200 50  0001 C CNN
+F 3 "" H 3825 4200 50  0001 C CNN
+	1    3825 4200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4175 4150 4175 4200
+$Comp
+L Device:R R1
+U 1 1 5F8F46C6
+P 3475 3575
+F 0 "R1" H 3545 3621 50  0000 L CNN
+F 1 "4K7" H 3545 3530 50  0000 L CNN
+F 2 "" V 3405 3575 50  0001 C CNN
+F 3 "~" H 3475 3575 50  0001 C CNN
+	1    3475 3575
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R2
+U 1 1 5F8F638D
+P 4325 3750
+F 0 "R2" V 4118 3750 50  0000 C CNN
+F 1 "220R" V 4209 3750 50  0000 C CNN
+F 2 "" V 4255 3750 50  0001 C CNN
+F 3 "~" H 4325 3750 50  0001 C CNN
+	1    4325 3750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4175 3750 4175 3850
+Wire Wire Line
+	3475 3725 3475 3750
+Wire Wire Line
+	3475 3750 3225 3750
+Connection ~ 3475 3750
+Wire Wire Line
+	3475 3750 3475 3800
+Text GLabel 3225 3750 0    50   Input ~ 0
+out
+Wire Wire Line
+	4475 3750 4575 3750
+Text GLabel 4575 3750 2    50   Input ~ 0
+in
+Wire Notes Line
+	3750 4150 4000 4150
+Wire Notes Line
+	3750 3550 4000 3550
+Wire Notes Line
+	3750 3550 3750 4150
+Wire Notes Line
+	4000 3550 4000 4150
+Connection ~ 3825 4200
+Wire Wire Line
+	3475 4200 3825 4200
+Text Notes 3925 3600 3    50   ~ 0
+photochromic\nsheet
+Wire Wire Line
+	3475 3425 3475 3300
+Wire Wire Line
+	3475 3300 3650 3300
+Wire Wire Line
+	3475 3300 3300 3300
+Connection ~ 3475 3300
+$Comp
+L power:+5V #PWR0102
+U 1 1 5F904E8B
+P 3650 3300
+F 0 "#PWR0102" H 3650 3150 50  0001 C CNN
+F 1 "+5V" H 3665 3473 50  0000 C CNN
+F 2 "" H 3650 3300 50  0001 C CNN
+F 3 "" H 3650 3300 50  0001 C CNN
+	1    3650 3300
+	1    0    0    -1  
+$EndComp
+Connection ~ 3650 3300
+Wire Wire Line
+	3650 3300 3825 3300
+$EndSCHEMATC
