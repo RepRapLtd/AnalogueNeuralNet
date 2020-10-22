@@ -19,11 +19,11 @@ const int ledPin = 3;
 const int ledMonitorPin = 4;
 const int voltagePin = A0;
 long seconds = 0;
-int pwm = 1;
+int pwm = 0;
 
 void SetValue(int v)
 {
-  if(v <= 0) v = 1;
+  if(v <= 0) v = 0;
   if(v > 255) v = 255;
   analogWrite(ledPin, v);
   pwm = v;
@@ -62,7 +62,7 @@ void setup()
   pinMode(ledPin, OUTPUT);
   pinMode(ledMonitorPin, INPUT);
   pinMode(voltagePin, INPUT);
-  SetValue(1);
+  SetValue(0);
 
   Serial.begin(BAUD);
   Serial.println("RepRap Ltd Optical Synapse Starting");
