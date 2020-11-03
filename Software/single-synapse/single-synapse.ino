@@ -15,8 +15,9 @@
  */
 
 const int BAUD = 9600;
-const int ledPin = 3;
+const int uVLEDPin = 3;
 const int ledMonitorPin = 4;
+const int readLEDPin = 5;
 const int voltagePin = A0;
 long seconds = 0;
 int pwm = 0;
@@ -25,22 +26,20 @@ void SetValue(int v)
 {
   if(v <= 0) v = 0;
   if(v > 255) v = 255;
-  analogWrite(ledPin, v);
+  analogWrite(uVLEDPin, v);
   pwm = v;
 }
 
-float ReadValue()
+float ReadValue(bool dark)
 {
   //while(!digitalRead(ledMonitorPin));
-  digitalWrite(ledPin, 1);
+  digitalWrite(uVLEDPin, 0);
+  if(!dark)
+    digitalWrite(readLEDPin, 1);
   int v = analogRead(voltagePin);
-  analogWrite(ledPin, pwm);
+  digitalWrite(readLEDPin, 0);
+  analogWrite(uVLEDPin, pwm);
   return (float)v*5.0/1024.0;
-}
-
-long ReadInteger()
-{
-  return (long)Serial.parseInt(); 
 }
 
 
@@ -59,10 +58,12 @@ void Change()
 
 void setup() 
 {
-  pinMode(ledPin, OUTPUT);
+  pinMode(uVLEDPin, OUTPUT);
+  pinMode(readLEDPin, OUTPUT);  
   pinMode(ledMonitorPin, INPUT);
   pinMode(voltagePin, INPUT);
   SetValue(0);
+  digitalWrite(readLEDPin, 0);
 
   Serial.begin(BAUD);
   Serial.println("RepRap Ltd Optical Synapse Starting");
@@ -79,7 +80,9 @@ void loop()
   Serial.print(", ");
   Serial.print(pwm);
   Serial.print(", ");
-  Serial.println(ReadValue());
+  Serial.print(ReadValue(true));
+  Serial.print(", ");
+  Serial.println(ReadValue(false)); 
   delay(1000);
   seconds++; 
 }
