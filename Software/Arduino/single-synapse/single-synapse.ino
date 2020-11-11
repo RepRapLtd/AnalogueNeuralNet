@@ -52,7 +52,17 @@ void Change()
     return;
     
   int v = Serial.parseInt();
-  SetValue(v);
+  if(v >= 0)
+   SetValue(v);
+  else
+  {
+    if(v == -1)
+    {
+      digitalWrite(readLEDPin, 1);
+      delay(5000);
+    }else
+      digitalWrite(readLEDPin, 0);
+  }
   while(Serial.available()) Serial.read();
 }
 
