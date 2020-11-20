@@ -25,6 +25,12 @@ See: https://reprapltd.com/a-slow-write-fast-read-optical-artificial-neural-netw
 
 import random
 
+def Ran8():
+ return random.randint(0, 255)
+
+def RanBool():
+ return Ran8()%2 is 1
+
 # A single synapse.  
 
 # The lookup table is the output voltage for a given UV LED pwm.
@@ -91,7 +97,7 @@ class Synapse:
  
 class Neuron:
 
- def __init__(self, threshold):
+ def __init__(self, threshold = 2.5):
   self.exciters = []
   self.inhibitors = []
   self.outputs = []
@@ -122,8 +128,82 @@ class Neuron:
    else:
     synapse.SetQuiet()
 
+class Network:
+ def __init__(self):
+  self.neurons = []
+  for x in range(5):
+   self.neurons.append(Neuron())
 
+  self.inputExciters = []
+  self.inputInhibitors = []
+  self.intermediateExciters = []
+  self.intermediateInhibitors = []
+  for x in range(4):
+   n = Neuron()
+   ise = []
+   isi = []
+   se = Synapse(Ran8())
+   si = Synapse(Ran8())
+   #print('Adding intermediate synapses (' + str(x) + ') to neuron 4')
+   self.neurons[4].AddExciter(se)
+   self.neurons[4].AddInhibitor(si)
+   self.intermediateExciters.append(se)
+   self.intermediateInhibitors.append(si)
+   for y in range(4):
+    se = Synapse(Ran8())
+    ise.append(se)
+    si = Synapse(Ran8())
+    isi.append(si)
+    n = (4*x + y)%4
+    #print('Adding e and s synapses (' + str(x) + ', ' + str(y) + ') to neuron ' + str(n))
+    self.neurons[n].AddExciter(se)
+    self.neurons[n].AddInhibitor(si)
+    self.neurons[n].AddOutput(self.intermediateExciters[x])
+    self.neurons[n].AddOutput(self.intermediateInhibitors[x])
+   self.inputExciters.append(ise)
+   self.inputInhibitors.append(isi)
+  self.neurons[4].AddOutput(Synapse(Ran8()))
 
+ def SetInputs(self, i):
+  for x in range(4):
+   for y in range(4):
+    if i[x][y]:
+     self.inputExciters[x][y].SetFiring()
+     self.inputInhibitors[x][y].SetFiring()
+    else:
+     self.inputExciters[x][y].SetQuiet()
+     self.inputInhibitors[x][y].SetQuiet()
+
+ def Run(self):
+  for n in range(5):
+   self.neurons[n].Run()
+  return self.neurons[4].outputs[0].IsFiring()
+
+# Testing...
+
+random.seed(17)
+n = Network()
+tt = 0
+ft = 0
+for k in range(10):
+ i = []
+ for x in range(4):
+  j = []
+  for y in range(4):
+   b = RanBool()
+   j.append(b)
+  i.append(j)
+ n.SetInputs(i)
+ o = n.Run()
+ if o:
+  tt += 1
+ else:
+  ft += 1
+ print("Network output: " + str(o))
+
+print("Trues: " + str(tt) + ", falses: " + str(ft))
+
+'''
 random.seed(17)
 s = Synapse(200)
 s.SetRandomPWM()
@@ -131,3 +211,4 @@ s.SetQuiet()
 print(s.Output())
 s.SetFiring()
 print(s.Output())
+'''
