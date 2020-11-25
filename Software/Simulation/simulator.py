@@ -46,7 +46,9 @@ class Synapse:
  def __init__(self, pwm):
   self.lookUpPWM = [0, 63, 127, 191, 255]
   self.lookUpVolts = [3.2, 3.8, 3.9, 4.1, 4.2]
-  self.SetPWM(pwm)
+  self.pwm = pwm
+  self.outputFiring = self.LookUp(self.pwm)
+  self.outputQuiet = self.LookUp(0)
   self.firing = False
 
  def LookUp(self, pwm):
@@ -88,11 +90,11 @@ class Synapse:
 
 # The neuron sums the inputs from all its dendritic excitatory synapses and subtracts the
 # sum of all its dendritic inhibitory synapses.  If the total exceeds a threshold, the neuron fires.
-# When it fires it ubdates the state of all the synapses on its output axon.
+# When it fires it updates the state of all the synapses on its output axon.
 # In the real machine the sums are done in parallel by two phototransistors arranged in a 
 # long-tailed pair so that one set of inputs is subtracted from the other set, resulting in a voltage.
 # The voltage is fed into a comparator that subtracts a threshold from it.  If the sum
-# is greater than the treshold the neuron fires, turning on the visible LEDs in all
+# is greater than the threshold the neuron fires, turning on the visible LEDs in all
 # the synapses connected to its output axon.
  
 class Neuron:
@@ -128,6 +130,12 @@ class Neuron:
    else:
     synapse.SetQuiet()
 
+# The entire network
+
+# At the moment this is set up as a 4 x 4 array of inputs into 4 8-input neurons.
+# 4 of each input are excitation inputs, and 4 are inhibiters.
+# The 4 outputs of those are fed into a fifth and final output neuron.
+
 class Network:
  def __init__(self):
   self.neurons = []
@@ -139,7 +147,6 @@ class Network:
   self.intermediateExciters = []
   self.intermediateInhibitors = []
   for x in range(4):
-   n = Neuron()
    ise = []
    isi = []
    se = Synapse(Ran8())
@@ -149,6 +156,8 @@ class Network:
    self.neurons[4].AddInhibitor(si)
    self.intermediateExciters.append(se)
    self.intermediateInhibitors.append(si)
+   self.neurons[x].AddOutput(se)
+   self.neurons[x].AddOutput(si)
    for y in range(4):
     se = Synapse(Ran8())
     ise.append(se)
@@ -158,8 +167,6 @@ class Network:
     #print('Adding e and s synapses (' + str(x) + ', ' + str(y) + ') to neuron ' + str(n))
     self.neurons[n].AddExciter(se)
     self.neurons[n].AddInhibitor(si)
-    self.neurons[n].AddOutput(self.intermediateExciters[x])
-    self.neurons[n].AddOutput(self.intermediateInhibitors[x])
    self.inputExciters.append(ise)
    self.inputInhibitors.append(isi)
   self.neurons[4].AddOutput(Synapse(Ran8()))
@@ -174,10 +181,56 @@ class Network:
      self.inputExciters[x][y].SetQuiet()
      self.inputInhibitors[x][y].SetQuiet()
 
+ def PrintState(self):
+  print("\nExcitation inputs: ")
+  for x in range(4):
+   print(' ', end = '')
+   for y in range(4):
+    if self.inputExciters[x][y].IsFiring():
+     print('1' + ' ', end='')
+    else:
+     print('0' + ' ', end='')
+   print()
+  print("Inhibition inputs: ")
+  for x in range(4):
+   print(' ', end = '')
+   for y in range(4):
+    if self.inputInhibitors[x][y].IsFiring():
+     print('1' + ' ', end='')
+    else:
+     print('0' + ' ', end='')
+   print()
+  print("Intermediate exciter inputs: ")
+  for x in range(4):
+   print(' ', end = '')
+   if self.intermediateExciters[x].IsFiring():
+    print('1' + ' ', end='')
+   else:
+    print('0' + ' ', end='')
+  print()
+  print("Intermediate inhibitor inputs: ")
+  for x in range(4):
+   print(' ', end = '')
+   if self.intermediateInhibitors[x].IsFiring():
+    print('1' + ' ', end='')
+   else:
+    print('0' + ' ', end='')
+  print()
+  print("Output: " + str(self.neurons[4].outputs[0].IsFiring()) + "\n\n")
+
  def Run(self):
   for n in range(5):
    self.neurons[n].Run()
   return self.neurons[4].outputs[0].IsFiring()
+
+def PrintPattern(i):
+ for x in range(4):
+  for y in range(4):
+   if i[x][y]:
+    print('1' + ' ', end='')
+   else:
+    print('0' + ' ', end='')
+  print()
 
 # Testing...
 
@@ -185,7 +238,7 @@ random.seed(17)
 n = Network()
 tt = 0
 ft = 0
-for k in range(10):
+for k in range(1):
  i = []
  for x in range(4):
   j = []
@@ -193,8 +246,10 @@ for k in range(10):
    b = RanBool()
    j.append(b)
   i.append(j)
+ #PrintPattern(i)
  n.SetInputs(i)
  o = n.Run()
+ n.PrintState()
  if o:
   tt += 1
  else:

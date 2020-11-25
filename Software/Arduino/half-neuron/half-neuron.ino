@@ -74,14 +74,19 @@ float ReadValue()
 
 void PrintInputScan()
 {
+  for(int i = 0; i < 4; i++)
+  {
+    Serial.print(pwms[i]);
+    Serial.print(", ");
+  }
   for(int i = 0; i < 16; i++)
   {
     for(int j = 0; j < 4; j++)
+    {
      inputs[j] = (i >> j) & 1;
-    Serial.print(i);
-    Serial.print(", ");
+    }
     Serial.print(ReadValue());
-    Serial.print(" | ");
+    Serial.print(", ");
   }
   Serial.println();
 }
@@ -127,7 +132,7 @@ void setup()
   SetLEDs(false);
 
   Serial.begin(BAUD);
-  Serial.println("RepRap Ltd Optical HAlf-Neuron Starting");
+  Serial.println("RepRap Ltd Optical Half-Neuron Starting");
 
   // Having a timeout on serial input is very silly and annoying.
   
@@ -136,6 +141,16 @@ void setup()
 
 void loop()
 {
-  PrintInputScan();
+  for(int i = 0; i < 4; i++)
+  {
+    for(int j = 0; j < 256; j += 17)
+    {
+      PrintInputScan();
+      pwms[i] = j;
+      SetPWMs(true);
+      delay(120000);
+    }
+    PrintInputScan();
+  }
   while(true); 
 }
