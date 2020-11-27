@@ -23,10 +23,12 @@ const int voltagePin = A0;
 long seconds = 0;
 int pwms[4] = {20, 20, 25, 23}; // About half way for each
 int previouspwms[4];
-int previousCost = 0.5;
+float previousCost = 64.0; // What you'd expect from half right at random
 bool inputs[4] = {false, false, false, false};
 float threshold = 4.3;
-float derivatives[4] = {0.0, 0.0, 0.0, 0.0};
+float previousThreshold;
+float learningRate = 1.0;
+float thresholdLearningRate = 0.3;
 
 void SetPWM(int v, int pwm)
 {
@@ -38,32 +40,31 @@ void SetPWM(int v, int pwm)
 
 void SetPWMs(bool light)
 {
-  for(int pwm = 0; pwm < 4; pwm++)
+  for(int synapse = 0; synapse < 4; synapse++)
   {
     if(light)
     {
-      analogWrite(uVLEDPins[pwm], pwms[pwm]);
+      analogWrite(uVLEDPins[synapse], pwms[synapse]);
     } else
     {
-
-      digitalWrite(uVLEDPins[pwm], 0);
+      digitalWrite(uVLEDPins[synapse], 0);
     }
   }
 }
 
 void SetLEDs(bool light)
 {
-  for(int led = 0; led < 4; led++)
+  for(int synapse = 0; synapse < 4; synapse++)
   {
     if(light)
     {
-      if(inputs[led])
-       digitalWrite(readLEDPins[led], 1);
+      if(inputs[synapse])
+       digitalWrite(readLEDPins[synapse], 1);
       else
-       digitalWrite(readLEDPins[led], 0);
+       digitalWrite(readLEDPins[synapse], 0);
     } else
     {
-      digitalWrite(readLEDPins[led], 0);
+      digitalWrite(readLEDPins[synapse], 0);
     }
   }
 }
@@ -80,19 +81,20 @@ float ReadValue()
 
 void PrintInputScan()
 {
-  for(int i = 0; i < 4; i++)
+  for(int synapse = 0; synapse < 4; synapse++)
   {
-    Serial.print(pwms[i]);
+    Serial.print(pwms[synapse]);
     Serial.print(", ");
   }
-  for(int i = 0; i < 16; i++)
+  for(int n = 0; n < 16; n++)
   {
-    for(int j = 0; j < 4; j++)
+    for(int synapse = 0; synapse < 4; synapse++)
     {
-     inputs[j] = (i >> j) & 1;
+     inputs[synapse] = (n >> synapse) & 1;
     }
     Serial.print(ReadValue());
-    Serial.print(", ");
+    if(n != 15)
+     Serial.print(", ");
   }
   Serial.println();
 }
@@ -101,9 +103,9 @@ void PrintInputScan()
 
 void SetNumber(int n)
 {
-  for(int j = 0; j < 4; j++)
+  for(int synapse = 0; synapse < 4; synapse++)
   {
-     inputs[j] = (n >> j) & 1;
+     inputs[synapse] = (n >> synapse) & 1;
   }
 }
 
@@ -123,7 +125,7 @@ float CostFunction()
     if(v > threshold && (n & 1))
       wrong++;
   }
-  float cost = (float)wrong/16.0;
+  float cost = (float)(wrong*wrong); // Nice tangent at 0
   return cost;
 }
 
@@ -149,37 +151,79 @@ void TestNumber()
   while(Serial.available()) Serial.read();
 }
 
+bool Report(char* title, float cost)
+{
+  Serial.println(title);
+  Serial.print(' ');
+  Serial.print("Cost: ");
+  Serial.print(cost);
+  Serial.print(", PWMs: ");
+  for(int synapse = 0; synapse < 4; synapse++)
+  {
+    Serial.print(pwms[synapse]);
+    Serial.print(", "); 
+  }
+  Serial.print(" Threshold: ");
+  Serial.println(threshold);
+  return cost < 1.1;
+}
+
+
+void Adjust(int pwmAdjustments[], float thresholdAdjustment)
+{
+  for(int synapse = 0; synapse < 4; synapse++)
+  {
+      previouspwms[synapse] = pwms[synapse];
+      pwms[synapse] += pwmAdjustments[synapse];
+      if(pwms[synapse] < 0)
+       pwms[synapse] = 0;
+      if(pwms[synapse] > 255)
+       pwms[synapse] = 255;
+  }
+  previousThreshold = threshold;
+  threshold += thresholdAdjustment;
+  if(threshold < 2.0)
+    threshold = 2.0;
+  if(threshold > 4.7)
+    threshold = 4.7;
+  SetPWMs(true);
+}
+
+int RandomPM1()
+{
+  return 1 - (2 - random(2)*2);
+}
+
 void Teach()
 {
+  int pwmAdjustments[4];
+  
   delay(120000);
   float cost = CostFunction();
-  Serial.print(cost);
-  Serial.print(", ");
-  for(int i = 0; i < 4; i++)
+  if(Report("Before - ", cost))
   {
-      Serial.print(pwms[i]);
-      Serial.print(", ");
+    Serial.println("Optimised.");
+    return;
   }
-  for(int i = 0; i < 4; i++)
+      
+  float derivative;
+  for(int synapse = 0; synapse < 4; synapse++)
   {
-    if(pwms[i] != previouspwms[i])
-      derivatives[i] = (cost - previousCost)/(float)(pwms[i] - previouspwms[i]);
-    else
-      derivatives[i] = (cost - previousCost); //????
-    previouspwms[i] = pwms[i];
-    int adjustment = -(int)(0.5 + 1.0/derivatives[i]);
-    Serial.print(adjustment);
-    if(i != 3)
-     Serial.print(", ");
-    pwms[i] = pwms[i] + adjustment;
-    if(pwms[i] < 0)
-      pwms[i] = 0;
-    if(pwms[i] > 255)
-      pwms[i] = 255;
+    int pd = pwms[synapse] - previouspwms[synapse];
+    if(pd == 0)
+      pd = RandomPM1(); // random +/-1: avoid division by 0
+    derivative = (cost - previousCost)/(float)(pd);
+    if(derivative == 0.0)
+     derivative = 1.0 - (float)(2 - (micros() & 1)); // avoid division by 0
+    pwmAdjustments[synapse] = -round(learningRate*previousCost/derivative); // Newton-Raphson
   }
+  derivative = (cost - previousCost)/(threshold - previousThreshold);
+  if(derivative == 0.0)
+   derivative = (float)RandomPM1(); // avoid division by 0
+  float thresholdAdjustment = -thresholdLearningRate*previousCost/derivative;
   previousCost = cost;
-  Serial.println();
-  SetPWMs(true);  
+  Adjust(pwmAdjustments, thresholdAdjustment);
+  Report("After - ", cost);
 }
 
 void setup() 
@@ -194,8 +238,17 @@ void setup()
   SetPWMs(false);
   SetLEDs(false);
 
+  randomSeed(951);
+
   Serial.begin(BAUD);
   Serial.println("RepRap Ltd Optical Half-Neuron Starting");
+
+  // Random pattern to start
+  
+  for(int synapse = 0; synapse < 4; synapse++)
+  {
+    pwms[synapse] = random(70);
+  }
 
   SetPWMs(true);   
 
@@ -203,18 +256,23 @@ void setup()
   
   Serial.setTimeout(30000);
 
-  for(int i = 0; i < 4; i++)
-    previouspwms[i] = pwms[i];
+  for(int synapse = 0; synapse < 4; synapse++)
+    previouspwms[synapse] = pwms[synapse];
+  Report("Initial - ", -1.0);
   delay(120000);
-  Serial.println("2 mins");
   previousCost = CostFunction();
-  for(int i = 0; i < 4; i++)
+
+  // Small purturbations to get initial derivatives.
+
+  for(int synapse = 0; synapse < 4; synapse++)
   {
-    if(i & 1)
-      pwms[i]++;
-    else
-      pwms[i]--;
+    previouspwms[synapse] = pwms[synapse];
+    pwms[synapse] += RandomPM1();
   }
+  previousThreshold = threshold;
+  threshold += 0.05*(float)RandomPM1();
+
+  Report("2 minutes - ", previousCost);
 }
 
 void loop()
