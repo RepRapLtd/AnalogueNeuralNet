@@ -22,13 +22,6 @@ long seconds = 0;
 int pwms[4] = {0, 0, 0, 0};
 bool inputs[4] = {false, false, false, false};
 
-void SetPWM(int v, int pwm)
-{
-  if(v <= 0) v = 0;
-  if(v > 255) v = 255;
-  analogWrite(uVLEDPins[pwm], v);
-  pwms[pwm] = v;
-}
 
 void SetPWMs(bool light)
 {
