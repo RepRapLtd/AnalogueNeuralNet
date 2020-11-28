@@ -23,19 +23,17 @@ const int voltagePin = A0;
 const float minThreshold = 2.0;
 const float maxThreshold = 4.7;
 const float nearly0 = 0.0000001;
-const float rolling = 5.0;
-float costAverage = 32;
 long seconds = 0;
 int pwms[4] = {0, 0, 0, 0}; // About half way for each
 int previouspwms[4];
-float previousCost = 64.0; // What you'd expect from half right at random
+float previousCost = 8.0; // Randomish big cost value
 bool inputs[4] = {false, false, false, false};
 float threshold = 4.3;
 float previousThreshold;
-float learningRate = 1.0;
-float thresholdLearningRate = 0.3;
-int noChange = 0;
-
+float learningRate = 0.2;
+float thresholdLearningRate = 0.2;
+long settle = 120000;
+long lastTime;
 
 
 void SetPWMs(bool light)
@@ -120,7 +118,8 @@ float CostFunction()
     float v = ReadValue();
     if((v < threshold && !(n & 1) ) || (v > threshold && (n & 1)))
     {
-      error += 70.0*(threshold - v)*(threshold - v);
+      float d = threshold - v;
+      error += d*d;
     }
   }
 
@@ -152,7 +151,7 @@ void TestNumber()
 void Report(float cost)
 {
   Serial.print("Cost: ");
-  Serial.print(cost);
+  Serial.print(cost, 4);
   Serial.print(", PWMs: ");
   for(int synapse = 0; synapse < 4; synapse++)
   {
@@ -160,10 +159,7 @@ void Report(float cost)
     Serial.print(", "); 
   }
   Serial.print(" Threshold: ");
-  Serial.print(threshold);
-  costAverage = ((rolling - 1.0)*costAverage + cost)/rolling;
-  Serial.print(", cost average: ");
-  Serial.println(costAverage);
+  Serial.println(threshold, 4);
 }
 
 
@@ -204,23 +200,18 @@ void RandomPWMs()
 
 float Teach()
 {
+  long t = millis();
+  if(t - lastTime < settle)
+    return;
+  lastTime = t;
+  
   int pwmAdjustments[4];
   
-  delay(120000);
   float cost = CostFunction();
       
   float derivative;
   float deltaCost = cost - previousCost;
-  if(deltaCost == 0 && cost > 1)
-    noChange++;
-  else
-    noChange = 0;
-  if(noChange > 6)
-  {
-    Serial.println("Stuck. Randomising PWMs.");
-    RandomPWMs();
-    noChange = 0;
-  }
+
   for(int synapse = 0; synapse < 4; synapse++)
   {
     int deltaPWM = pwms[synapse] - previouspwms[synapse];
@@ -242,7 +233,7 @@ float Teach()
   if(fabs(derivative) < nearly0)
     thresholdAdjustment = (float)RandomPM1()*0.01; // avoid division by 0
   else
-    thresholdAdjustment = -thresholdLearningRate*previousCost/derivative;
+    thresholdAdjustment = -thresholdLearningRate*previousCost/derivative;  // Again with the Newton-Raphson
   previousCost = cost;
   Adjust(pwmAdjustments, thresholdAdjustment);
   Report(cost);
@@ -266,7 +257,7 @@ void setup()
 
   Serial.begin(BAUD);
   Serial.println("RepRap Ltd Optical Half-Neuron Starting");
-
+  Serial.println("Type an integer in [0, 15] at any time to test if it works.");
   Serial.print("Random seed: ");
   while(Serial.available() <= 0);
   int n = Serial.parseInt();
@@ -304,6 +295,12 @@ void setup()
   while(Serial.available()) Serial.read();
   Serial.println(threshold);
 
+  Serial.print("Settling time (ms): ");
+  while(Serial.available() <= 0);
+  settle = Serial.parseInt();
+  while(Serial.available()) Serial.read();
+  Serial.println(settle); 
+
 
   // Having a timeout on serial input is very silly and annoying.
   
@@ -311,7 +308,7 @@ void setup()
   for(int synapse = 0; synapse < 4; synapse++)
     previouspwms[synapse] = pwms[synapse];
   Report(-1.0);
-  delay(120000);
+  delay(settle);
   previousCost = CostFunction();
 
   // Small purturbations to get initial derivatives.
@@ -326,16 +323,14 @@ void setup()
   threshold += 0.02*(float)RandomPM1();
 
   Report(previousCost);
+  lastTime = millis();
 }
 
 
 
 void loop()
 {
-  if(costAverage > 1.5)
-  {
-    float cost = Teach();
-  }
+  Teach();
 
   TestNumber();
 }
