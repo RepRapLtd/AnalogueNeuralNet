@@ -16,19 +16,22 @@
  * 
  */
 
+bool debug = false;
+
 const int BAUD = 9600;
 int uVLEDPins[4] = {3, 5, 6, 9};
 const int readLEDPins[4] = {2, 4, 7, 8};
 const int voltagePin = A0;
-const float minThreshold = 2.0;
-const float maxThreshold = 4.7;
+const float minThreshold = 2.6;
+const float maxThreshold = 4.5;
 const float nearly0 = 0.0000001;
 long seconds = 0;
 int pwms[4] = {0, 0, 0, 0}; // About half way for each
 int previouspwms[4];
-float previousCost = 8.0; // Randomish big cost value
+float previousLoss;
 bool inputs[4] = {false, false, false, false};
-float threshold = 4.3;
+bool teaching = true;
+float threshold = 4.0;
 float previousThreshold;
 float learningRate = 0.2;
 float thresholdLearningRate = 0.2;
@@ -107,23 +110,49 @@ void SetNumber(int n)
   }
 }
 
-// Compute the sum of squared errors
+// Compute the mean of the sum of squared errors
 
-float CostFunction()
+float LossFunction()
 {
   float error = 0.0;
+  float right = 0.0;
+  bool wrong;
+  int wrongCount = 0;
   for(int n = 0; n < 16; n++)
   {
+    //int n = random(16);
+    //Serial.println(n);
     SetNumber(n);
     float v = ReadValue();
-    if((v < threshold && !(n & 1) ) || (v > threshold && (n & 1)))
+    wrong = false;
+    if(n & 1)
     {
-      float d = threshold - v;
+      if(v < threshold)
+        wrong = true;
+    } else
+    {
+       if(v > threshold)
+        wrong = true;     
+    }
+    float d = threshold - v;
+    if(wrong)
+    {
+ 
+      //return d*d;
       error += d*d;
+      wrongCount++;
+    } else
+    {
+      right += d*d;
     }
   }
 
-  return error;
+  //return 0;
+
+  //if(wrongCount == 0)
+   // return 0;
+
+  return error - right; // /(float)wrongCount;
 }
 
 
@@ -137,21 +166,30 @@ void TestNumber()
     
 
   int n = Serial.parseInt();
+
+  if(n < 0)
+  {
+    Serial.println("Teaching stopped.");
+    teaching = false;
+    return;
+  }
+  
   SetNumber(n);
   Serial.print(n);
   float v = ReadValue();
   if(v > threshold)
-    Serial.println(" is even.");
+    Serial.print(" is even. dv = ");
   else
-    Serial.println(" is odd."); 
+    Serial.print(" is odd. dv = ");
+  Serial.println(v - threshold); 
 
   while(Serial.available()) Serial.read();
 }
 
-void Report(float cost)
+void Report(float loss)
 {
-  Serial.print("Cost: ");
-  Serial.print(cost, 4);
+  Serial.print("Loss: ");
+  Serial.print(loss, 4);
   Serial.print(", PWMs: ");
   for(int synapse = 0; synapse < 4; synapse++)
   {
@@ -207,38 +245,64 @@ float Teach()
   
   int pwmAdjustments[4];
   
-  float cost = CostFunction();
+  float loss = LossFunction();
       
   float derivative;
-  float deltaCost = cost - previousCost;
+  float deltaLoss = loss - previousLoss;
+  if(debug)
+  {
+    Serial.print("Delta loss: ");
+    Serial.print(deltaLoss);
+    Serial.print(", delta PWM|derivative: ");
+  }
 
   for(int synapse = 0; synapse < 4; synapse++)
   {
     int deltaPWM = pwms[synapse] - previouspwms[synapse];
+    if(debug)
+    {
+      Serial.print(deltaPWM);
+      Serial.print("|");
+    }
     if(deltaPWM == 0)
     {
       deltaPWM = RandomPM1(); // random +/-1: avoid division by 0
     }
-    derivative = deltaCost/(float)(deltaPWM);
+    derivative = deltaLoss/(float)(deltaPWM);
+    if(debug)
+    {
+      Serial.print(derivative);
+      Serial.print(", ");
+    }
     if(fabs(derivative) < nearly0)
       pwmAdjustments[synapse] = RandomPM1(); // avoid division by 0 but still shake things up a bit
     else
-      pwmAdjustments[synapse] = -round(learningRate*previousCost/derivative); // Newton-Raphson
+      pwmAdjustments[synapse] = -round(learningRate*previousLoss/derivative); // Newton-Raphson
   }
   float deltaThreshold = threshold - previousThreshold;
+  if(debug)
+  {
+    Serial.print("delta threshold|derivative: ");
+    Serial.print(deltaThreshold);
+    Serial.print("|");
+  }
   if(fabs(deltaThreshold) < nearly0)
     deltaThreshold = 0.005 + copysignf(deltaThreshold, 0.01);
-  derivative = deltaCost/deltaThreshold;
+  derivative = deltaLoss/deltaThreshold;
+  if(debug)
+  {
+    Serial.println(derivative);
+  }
   float thresholdAdjustment;
   if(fabs(derivative) < nearly0)
     thresholdAdjustment = (float)RandomPM1()*0.01; // avoid division by 0
   else
-    thresholdAdjustment = -thresholdLearningRate*previousCost/derivative;  // Again with the Newton-Raphson
-  previousCost = cost;
+    thresholdAdjustment = -thresholdLearningRate*previousLoss/derivative;  // Again with the Newton-Raphson
+  previousLoss = loss;
   Adjust(pwmAdjustments, thresholdAdjustment);
-  Report(cost);
+  Report(loss);
 
-  return cost;
+  return loss;
 }
 
 void setup() 
@@ -258,6 +322,7 @@ void setup()
   Serial.begin(BAUD);
   Serial.println("RepRap Ltd Optical Half-Neuron Starting");
   Serial.println("Type an integer in [0, 15] at any time to test if it works.");
+  Serial.println("Type a negative number to stop teaching.");
   Serial.print("Random seed: ");
   while(Serial.available() <= 0);
   int n = Serial.parseInt();
@@ -309,7 +374,7 @@ void setup()
     previouspwms[synapse] = pwms[synapse];
   Report(-1.0);
   delay(settle);
-  previousCost = CostFunction();
+  previousLoss = LossFunction();
 
   // Small purturbations to get initial derivatives.
 
@@ -322,7 +387,9 @@ void setup()
   previousThreshold = threshold;
   threshold += 0.02*(float)RandomPM1();
 
-  Report(previousCost);
+  SetPWMs(true);
+
+  Report(previousLoss);
   lastTime = millis();
 }
 
@@ -330,7 +397,8 @@ void setup()
 
 void loop()
 {
-  Teach();
+  if(teaching)
+    Teach();
 
   TestNumber();
 }
