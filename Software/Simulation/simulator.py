@@ -50,7 +50,7 @@ class Synapse:
    self.lookUpVolts.append(vv - v[0])
   self.pwm = pwm
   self.outputFiring = self.LookUp(self.pwm)
-  self.outputQuiet = self.LookUp(0)
+  self.outputQuiet = self.LookUp(255)       # Dark is high voltage, active is low
   self.firing = False
 
  def LookUp(self, pwm):
@@ -73,7 +73,7 @@ class Synapse:
  def SetPWM(self, pwm):
   self.pwm = pwm
   self.outputFiring = self.LookUp(self.pwm)
-  self.outputQuiet = self.LookUp(0)
+  self.outputQuiet = self.LookUp(255)
 
  def SetRandomPWM(self):
   self.SetPWM(random.randint(0, 255))
@@ -136,6 +136,9 @@ class Neuron:
     synapse.SetFiring()
    else:
     synapse.SetQuiet()
+
+ def IsFiring(self):
+  return self.outputs[0].IsFiring()
 
 # The entire network
 
@@ -278,7 +281,45 @@ def CallibrationExperiment():
    PrintInputScan(neuron)
    synapse.SetPWM(synapse.pwm + 17)
 
-CallibrationExperiment()
+def LossFunction(neuron):
+ wrong = 0.0
+ right = 0.0
+ for n in range(16):
+  SetNumber(n, neuron)
+  neuron.Run()
+  v = neuron.Voltage()
+  error = False
+  if (n & 1) is 1:
+   if v > neuron.threshold:
+    error = True
+  else:
+   if v < neuron.threshold:
+    error = True
+  d = neuron.threshold - v
+  if error:
+   wrong += d*d
+#  else:
+#   right += d*d
+ return wrong - right
+
+def OddEvenTest1():
+ neuron = BuildNeuron()
+ neuron.SetThreshold(3.7)
+ neuron.exciters[0].SetPWM(0)
+ for s in range(1, 4):
+  neuron.exciters[s].SetPWM(255)
+ for n in range(16):
+  SetNumber(n, neuron)
+  neuron.Run()
+  if neuron.IsFiring():
+   print(str(n) + " is even.")
+  else:
+   print(str(n) + " is odd.")
+ print("Loss: " + str(LossFunction(neuron)))
+
+
+OddEvenTest1()
+#CallibrationExperiment()
 
 '''
 random.seed(17)
