@@ -80,22 +80,19 @@ float ReadValue()
   return (float)v*5.0/1024.0;
 }
 
-void PrintInputScan()
+void PrintAll()
 {
-  for(int synapse = 0; synapse < 4; synapse++)
-  {
-    Serial.print(pwms[synapse]);
-    Serial.print(", ");
-  }
+
   for(int n = 0; n < 16; n++)
   {
-    for(int synapse = 0; synapse < 4; synapse++)
-    {
-     inputs[synapse] = (n >> synapse) & 1;
-    }
-    Serial.print(ReadValue());
-    if(n != 15)
-     Serial.print(", ");
+    SetNumber(n);
+    Serial.print(n);
+    float v = ReadValue();
+    if(v > threshold)
+      Serial.print(" is even. dv = ");
+    else
+      Serial.print(" is odd. dv = ");
+    Serial.println(v - threshold); 
   }
   Serial.println();
 }
@@ -114,45 +111,34 @@ void SetNumber(int n)
 
 float LossFunction()
 {
-  float error = 0.0;
+  float wrong = 0.0;
   float right = 0.0;
-  bool wrong;
-  int wrongCount = 0;
+  bool error;
   for(int n = 0; n < 16; n++)
   {
-    //int n = random(16);
-    //Serial.println(n);
     SetNumber(n);
     float v = ReadValue();
-    wrong = false;
+    error = false;
     if(n & 1)
     {
-      if(v < threshold)
-        wrong = true;
+      if(v > threshold)
+        error = true;
     } else
     {
-       if(v > threshold)
-        wrong = true;     
+       if(v < threshold)
+        error = true;     
     }
     float d = threshold - v;
-    if(wrong)
+    if(error)
     {
- 
-      //return d*d;
-      error += d*d;
-      wrongCount++;
+      wrong += d*d;
     } else
     {
       right += d*d;
     }
   }
 
-  //return 0;
-
-  //if(wrongCount == 0)
-   // return 0;
-
-  return error - right; // /(float)wrongCount;
+  return wrong - right;
 }
 
 
@@ -171,6 +157,12 @@ void TestNumber()
   {
     Serial.println("Teaching stopped.");
     teaching = false;
+    return;
+  }
+
+  if(n > 16)
+  {
+    PrintAll();
     return;
   }
   
@@ -322,7 +314,7 @@ void setup()
   Serial.begin(BAUD);
   Serial.println("RepRap Ltd Optical Half-Neuron Starting");
   Serial.println("Type an integer in [0, 15] at any time to test if it works.");
-  Serial.println("Type a negative number to stop teaching.");
+  Serial.println("Type a negative number to stop teaching; >16 to print all inputs.");
   Serial.print("Random seed: ");
   while(Serial.available() <= 0);
   int n = Serial.parseInt();

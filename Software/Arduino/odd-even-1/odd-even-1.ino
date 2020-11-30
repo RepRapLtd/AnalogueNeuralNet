@@ -133,9 +133,9 @@ void TestNumber()
   Serial.print(n);
   float v = ReadValue();
   if(v > threshold)
-    Serial.println(" is even.");
+    Serial.println(" is odd.");
   else
-    Serial.println(" is odd."); 
+    Serial.println(" is even."); 
 
   while(Serial.available()) Serial.read();
 }
