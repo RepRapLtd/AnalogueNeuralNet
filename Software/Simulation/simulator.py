@@ -43,9 +43,11 @@ def RanBool():
 
 class Synapse:
 
- def __init__(self, pwm):
-  self.lookUpPWM = [0, 63, 127, 191, 255]
-  self.lookUpVolts = [3.2, 3.8, 3.9, 4.1, 4.2]
+ def __init__(self, pwm = 0, v = [4.38, 4.68, 4.73, 4.75, 4.77, 4.77]):
+  self.lookUpPWM = [0, 34, 68, 119, 187, 255]
+  self.lookUpVolts = []
+  for vv in v:
+   self.lookUpVolts.append(vv - v[0])
   self.pwm = pwm
   self.outputFiring = self.LookUp(self.pwm)
   self.outputQuiet = self.LookUp(0)
@@ -99,11 +101,13 @@ class Synapse:
  
 class Neuron:
 
- def __init__(self, threshold = 2.5):
+ def __init__(self, start = 2.55, threshold = 2.5):
   self.exciters = []
   self.inhibitors = []
   self.outputs = []
   self.SetThreshold(threshold)
+  self.volts = 0.0
+  self.start = start
 
  def AddExciter(self, synapse):
   self.exciters.append(synapse)
@@ -117,13 +121,16 @@ class Neuron:
  def SetThreshold(self, threshold):
   self.threshold = threshold
 
+ def Voltage(self):
+  return self.volts
+
  def Run(self):
-  sum = 0.0
+  self.volts = self.start
   for synapse in self.exciters:
-   sum += synapse.Output()
+   self.volts += synapse.Output()
   for synapse in self.inhibitors:
-   sum -= synapse.Output()
-  firing = (sum >= self.threshold)    
+   self.volts -= synapse.Output()
+  firing = (self.volts >= self.threshold)
   for synapse in self.outputs:
    if firing:
     synapse.SetFiring()
@@ -232,8 +239,48 @@ def PrintPattern(i):
     print('0' + ' ', end='')
   print()
 
-# Testing...
+# Testing single neuron to see if it matches experiment...
 
+def SetNumber(n, neuron):
+ count = 0
+ for synapse in neuron.exciters:
+  if (n >> count) & 1 is 1:
+   synapse.SetFiring()
+  else:
+   synapse.SetQuiet()
+
+def PrintInputScan(neuron):
+ for synapse in neuron.exciters:
+  print(str(synapse.pwm) + ", ", end="")
+ for n in range(16):
+  SetNumber(n, neuron)
+  neuron.Run()
+  print(f'{neuron.Voltage():.2f}' + ", ", end = "")
+ print()
+
+def BuildNeuron():
+ neuron = Neuron()
+ neuron.AddExciter(Synapse(pwm = 0, v = [4.38, 4.68, 4.73, 4.75, 4.77, 4.77]))
+ neuron.AddExciter(Synapse(pwm = 0, v = [4.27, 4.58, 4.64, 4.68, 4.7, 4.71]))
+ neuron.AddExciter(Synapse(pwm = 0, v = [4.53, 4.67, 4.72, 4.75, 4.77, 4.78]))
+ neuron.AddExciter(Synapse(pwm = 0, v = [4.46, 4.67, 4.71, 4.75, 4.77, 4.77]))
+
+ output = Synapse()
+ neuron.AddOutput(output)
+ return neuron
+
+def CallibrationExperiment():
+ neuron = BuildNeuron()
+ for synapse in neuron.exciters:
+  synapse.SetPWM(0)
+ for synapse in neuron.exciters:
+  for pwm in range(0, 255, 17):
+   PrintInputScan(neuron)
+   synapse.SetPWM(synapse.pwm + 17)
+
+CallibrationExperiment()
+
+'''
 random.seed(17)
 n = Network()
 tt = 0
@@ -258,7 +305,7 @@ for k in range(1):
 
 print("Trues: " + str(tt) + ", falses: " + str(ft))
 
-'''
+
 random.seed(17)
 s = Synapse(200)
 s.SetRandomPWM()
