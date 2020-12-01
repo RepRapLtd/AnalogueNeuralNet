@@ -24,12 +24,21 @@ See: https://reprapltd.com/a-slow-write-fast-read-optical-artificial-neural-netw
 
 
 import random
+import math
 
 def Ran8():
  return random.randint(0, 255)
 
 def RanBool():
  return Ran8()%2 is 1
+
+# Empirical data
+
+s1 = [4.38, 4.62, 4.68, 4.71, 4.73, 4.74, 4.74, 4.75, 4.76, 4.77, 4.77, 4.77, 4.77, 4.77, 4.78, 4.77]
+s2 = [4.27, 4.51, 4.58, 4.62, 4.64, 4.66, 4.67, 4.68, 4.69, 4.69, 4.7, 4.7, 4.7, 4.71, 4.71, 4.71]
+s4 = [4.53, 4.63, 4.67, 4.71, 4.72, 4.74, 4.74, 4.75, 4.76, 4.77, 4.77, 4.77, 4.78, 4.78, 4.78, 4.78]
+s8 = [4.46, 4.62, 4.67, 4.7, 4.71, 4.73, 4.74, 4.75, 4.75, 4.76, 4.76, 4.77, 4.77, 4.77, 4.77, 4.77]
+pwmIncrement = 17
 
 # A single synapse.  
 
@@ -43,26 +52,26 @@ def RanBool():
 
 class Synapse:
 
- def __init__(self, pwm = 0, v = [4.38, 4.68, 4.73, 4.75, 4.77, 4.77]):
-  self.lookUpPWM = [0, 34, 68, 119, 187, 255]
+ def __init__(self, v = [0, 1], pwmIncrement = 255, pwm = 0):
   self.lookUpVolts = []
   for vv in v:
    self.lookUpVolts.append(vv - v[0])
+  self.pwmIncrement = pwmIncrement
   self.pwm = pwm
   self.outputFiring = self.LookUp(self.pwm)
   self.outputQuiet = self.LookUp(255)       # Dark is high voltage, active is low
   self.firing = False
 
  def LookUp(self, pwm):
-  for i in range(1, len(self.lookUpPWM)):
-   if self.lookUpPWM[i] >= pwm:
-    v0 = self.lookUpVolts[i-1]
-    v1 = self.lookUpVolts[i]
-    pwm0 = self.lookUpPWM[i-1] + 0.0
-    pwm1 = self.lookUpPWM[i] + 0.0
-    return v0 + (v1 - v0)*(pwm - pwm0)/(pwm1 - pwm0)
-  print("Synapse look-up error!")
-  return self.lookUpVolts[0]
+  lower = math.floor(pwm/self.pwmIncrement)
+  #print(str(pwm) + ", " + str(lower))
+  if(lower > len(self.lookUpVolts) - 2):
+   lower = len(self.lookUpVolts) - 2
+  v0 = self.lookUpVolts[lower]
+  v1 = self.lookUpVolts[lower+1]
+  pwm0 = lower*self.pwmIncrement + 0.0
+  pwm1 = (lower+1)*self.pwmIncrement + 0.0
+  return v0 + (v1 - v0)*(pwm - pwm0)/(pwm1 - pwm0)
 
  def Output(self):
   if self.firing:
@@ -74,9 +83,6 @@ class Synapse:
   self.pwm = pwm
   self.outputFiring = self.LookUp(self.pwm)
   self.outputQuiet = self.LookUp(255)
-
- def SetRandomPWM(self):
-  self.SetPWM(random.randint(0, 255))
 
  def SetFiring(self):
   self.firing = True
@@ -99,46 +105,149 @@ class Synapse:
 # is greater than the threshold the neuron fires, turning on the visible LEDs in all
 # the synapses connected to its output axon.
  
-class Neuron:
+class HalfNeuron:
 
- def __init__(self, start = 2.55, threshold = 2.5):
-  self.exciters = []
-  self.inhibitors = []
-  self.outputs = []
-  self.SetThreshold(threshold)
-  self.volts = 0.0
-  self.start = start
+ def __init__(self, lowestVoltage = 2.55, noInput = 5.0):
+  self.inputSynapses = []
+  self.volts = lowestVoltage
+  self.lowestVoltage = lowestVoltage
+  self.noInput = noInput
 
- def AddExciter(self, synapse):
-  self.exciters.append(synapse)
+ def AddInput(self, synapse):
+  self.inputSynapses.append(synapse)
 
- def AddInhibitor(self, synapse):
-  self.inhibitors.append(synapse)
-
- def AddOutput(self, synapse):
-  self.outputs.append(synapse)
-
- def SetThreshold(self, threshold):
-  self.threshold = threshold
-
- def Voltage(self):
+ def Output(self):
   return self.volts
 
  def Run(self):
-  self.volts = self.start
-  for synapse in self.exciters:
+  self.volts = self.lowestVoltage
+  allZero = True
+  for synapse in self.inputSynapses:
+   if synapse.IsFiring():
+    allZero = False
    self.volts += synapse.Output()
-  for synapse in self.inhibitors:
-   self.volts -= synapse.Output()
-  firing = (self.volts >= self.threshold)
-  for synapse in self.outputs:
-   if firing:
-    synapse.SetFiring()
-   else:
-    synapse.SetQuiet()
+  if allZero:
+   self.volts = self.noInput
 
- def IsFiring(self):
-  return self.outputs[0].IsFiring()
+# Testing single neuron to see if it matches experiment...
+
+def SetNumber(n, halfNeuron):
+ count = 0
+ for synapse in halfNeuron.inputSynapses:
+  if ((n >> count) & 1) is 1:
+   synapse.SetFiring()
+  else:
+   synapse.SetQuiet()
+  count += 1
+
+def PrintInputScan(halfNeuron):
+ for synapse in halfNeuron.inputSynapses:
+  print(str(synapse.pwm) + ", ", end="")
+ for n in range(16):
+  SetNumber(n, halfNeuron)
+  halfNeuron.Run()
+  print(f'{halfNeuron.Output():.2f}' + ", ", end ="")
+ print()
+
+def BuildHalfNeuron():
+ halfNeuron = HalfNeuron()
+ halfNeuron.AddInput(Synapse(s1, pwmIncrement, pwm = 0))
+ halfNeuron.AddInput(Synapse(s2, pwmIncrement, pwm = 0))
+ halfNeuron.AddInput(Synapse(s4, pwmIncrement, pwm = 0))
+ halfNeuron.AddInput(Synapse(s8, pwmIncrement, pwm = 0))
+ return halfNeuron
+
+def CallibrationExperiment():
+ halfNeuron = BuildHalfNeuron()
+ for synapse in halfNeuron.inputSynapses:
+  synapse.SetPWM(0)
+ for synapse in halfNeuron.inputSynapses:
+  for pwm in range(0, 255, 17):
+   PrintInputScan(halfNeuron)
+   synapse.SetPWM(synapse.pwm + 17)
+
+def LossFunction(halfNeuron, threshold):
+ wrong = 0.0
+ for n in range(16):
+  SetNumber(n, halfNeuron)
+  halfNeuron.Run()
+  v = halfNeuron.Output()
+  error = False
+  if (n & 1) is 1:
+   if v > threshold:
+    error = True
+  else:
+   if v < threshold:
+    error = True
+  d = threshold - v
+  if error:
+   wrong += d*d
+ return wrong
+
+def OddEvenTest1(threshold):
+ halfNeuron = BuildHalfNeuron()
+ halfNeuron.inputSynapses[0].SetPWM(0)
+ for s in range(1, 4):
+  halfNeuron.inputSynapses[s].SetPWM(100)
+ for n in range(16):
+  SetNumber(n, halfNeuron)
+  halfNeuron.Run()
+  v = halfNeuron.Output()
+  if v > threshold:
+   print(str(n) + " is even. ", end='')
+  else:
+   print(str(n) + " is odd. ", end='')
+  print(v)
+ print("Loss: " + str(LossFunction(halfNeuron, threshold)))
+
+
+OddEvenTest1(3.8)
+#CallibrationExperiment()
+
+'''
+random.seed(17)
+n = Network()
+tt = 0
+ft = 0
+for k in range(1):
+ i = []
+ for x in range(4):
+  j = []
+  for y in range(4):
+   b = RanBool()
+   j.append(b)
+  i.append(j)
+ #PrintPattern(i)
+ n.SetInputs(i)
+ o = n.Run()
+ n.PrintState()
+ if o:
+  tt += 1
+ else:
+  ft += 1
+ print("Network output: " + str(o))
+
+print("Trues: " + str(tt) + ", falses: " + str(ft))
+
+
+random.seed(17)
+s = Synapse(200)
+s.SetRandomPWM()
+s.SetQuiet()
+print(s.Output())
+s.SetFiring()
+print(s.Output())
+
+def PrintPattern(i):
+ for x in range(4):
+  for y in range(4):
+   if i[x][y]:
+    print('1' + ' ', end='')
+   else:
+    print('0' + ' ', end='')
+  print()
+
+
 
 # The entire network
 
@@ -150,7 +259,7 @@ class Network:
  def __init__(self):
   self.neurons = []
   for x in range(5):
-   self.neurons.append(Neuron())
+   self.neurons.append(HalfNeuron())
 
   self.inputExciters = []
   self.inputInhibitors = []
@@ -162,7 +271,7 @@ class Network:
    se = Synapse(Ran8())
    si = Synapse(Ran8())
    #print('Adding intermediate synapses (' + str(x) + ') to neuron 4')
-   self.neurons[4].AddExciter(se)
+   self.neurons[4].AddInput(se)
    self.neurons[4].AddInhibitor(si)
    self.intermediateExciters.append(se)
    self.intermediateInhibitors.append(si)
@@ -175,7 +284,7 @@ class Network:
     isi.append(si)
     n = (4*x + y)%4
     #print('Adding e and s synapses (' + str(x) + ', ' + str(y) + ') to neuron ' + str(n))
-    self.neurons[n].AddExciter(se)
+    self.neurons[n].AddInput(se)
     self.neurons[n].AddInhibitor(si)
    self.inputExciters.append(ise)
    self.inputInhibitors.append(isi)
@@ -232,126 +341,4 @@ class Network:
   for n in range(5):
    self.neurons[n].Run()
   return self.neurons[4].outputs[0].IsFiring()
-
-def PrintPattern(i):
- for x in range(4):
-  for y in range(4):
-   if i[x][y]:
-    print('1' + ' ', end='')
-   else:
-    print('0' + ' ', end='')
-  print()
-
-# Testing single neuron to see if it matches experiment...
-
-def SetNumber(n, neuron):
- count = 0
- for synapse in neuron.exciters:
-  if (n >> count) & 1 is 1:
-   synapse.SetFiring()
-  else:
-   synapse.SetQuiet()
-
-def PrintInputScan(neuron):
- for synapse in neuron.exciters:
-  print(str(synapse.pwm) + ", ", end="")
- for n in range(16):
-  SetNumber(n, neuron)
-  neuron.Run()
-  print(f'{neuron.Voltage():.2f}' + ", ", end = "")
- print()
-
-def BuildNeuron():
- neuron = Neuron()
- neuron.AddExciter(Synapse(pwm = 0, v = [4.38, 4.68, 4.73, 4.75, 4.77, 4.77]))
- neuron.AddExciter(Synapse(pwm = 0, v = [4.27, 4.58, 4.64, 4.68, 4.7, 4.71]))
- neuron.AddExciter(Synapse(pwm = 0, v = [4.53, 4.67, 4.72, 4.75, 4.77, 4.78]))
- neuron.AddExciter(Synapse(pwm = 0, v = [4.46, 4.67, 4.71, 4.75, 4.77, 4.77]))
-
- output = Synapse()
- neuron.AddOutput(output)
- return neuron
-
-def CallibrationExperiment():
- neuron = BuildNeuron()
- for synapse in neuron.exciters:
-  synapse.SetPWM(0)
- for synapse in neuron.exciters:
-  for pwm in range(0, 255, 17):
-   PrintInputScan(neuron)
-   synapse.SetPWM(synapse.pwm + 17)
-
-def LossFunction(neuron):
- wrong = 0.0
- right = 0.0
- for n in range(16):
-  SetNumber(n, neuron)
-  neuron.Run()
-  v = neuron.Voltage()
-  error = False
-  if (n & 1) is 1:
-   if v > neuron.threshold:
-    error = True
-  else:
-   if v < neuron.threshold:
-    error = True
-  d = neuron.threshold - v
-  if error:
-   wrong += d*d
-#  else:
-#   right += d*d
- return wrong - right
-
-def OddEvenTest1():
- neuron = BuildNeuron()
- neuron.SetThreshold(3.7)
- neuron.exciters[0].SetPWM(0)
- for s in range(1, 4):
-  neuron.exciters[s].SetPWM(255)
- for n in range(16):
-  SetNumber(n, neuron)
-  neuron.Run()
-  if neuron.IsFiring():
-   print(str(n) + " is even.")
-  else:
-   print(str(n) + " is odd.")
- print("Loss: " + str(LossFunction(neuron)))
-
-
-OddEvenTest1()
-#CallibrationExperiment()
-
-'''
-random.seed(17)
-n = Network()
-tt = 0
-ft = 0
-for k in range(1):
- i = []
- for x in range(4):
-  j = []
-  for y in range(4):
-   b = RanBool()
-   j.append(b)
-  i.append(j)
- #PrintPattern(i)
- n.SetInputs(i)
- o = n.Run()
- n.PrintState()
- if o:
-  tt += 1
- else:
-  ft += 1
- print("Network output: " + str(o))
-
-print("Trues: " + str(tt) + ", falses: " + str(ft))
-
-
-random.seed(17)
-s = Synapse(200)
-s.SetRandomPWM()
-s.SetQuiet()
-print(s.Output())
-s.SetFiring()
-print(s.Output())
 '''
