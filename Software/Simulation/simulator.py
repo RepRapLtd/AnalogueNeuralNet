@@ -32,6 +32,9 @@ def Ran8():
 def RanBool():
  return Ran8()%2 is 1
 
+def RandomPM1():
+ return 1 - (Ran8()%2)*2;
+
 # Empirical data
 
 s1 = [4.38, 4.62, 4.68, 4.71, 4.73, 4.74, 4.74, 4.75, 4.76, 4.77, 4.77, 4.77, 4.77, 4.77, 4.78, 4.77]
@@ -184,6 +187,60 @@ def LossFunction(halfNeuron, threshold):
    wrong += d*d
  return wrong
 
+previousLoss = 0.0
+previousPWMs = [0, 0, 0, 0]
+nearly0 = 0.0000001
+learningRate = 1.0
+
+def Teach(halfNeuron, threshold):
+ global previousLoss
+ global previousPWMs
+ global previousThreshold
+ global nearly0
+ global learningRate
+
+ loss = LossFunction(halfNeuron, threshold)
+ deltaLoss = loss - previousLoss
+ for s in range(4):
+  synapse = halfNeuron.inputSynapses[s]
+  deltaPWM = synapse.pwm - previousPWMs[s]
+  if deltaPWM == 0:
+   deltaPWM = RandomPM1()
+  derivative = deltaLoss/(deltaPWM + 0.0)
+  print(derivative)
+  if math.fabs(derivative) < nearly0:
+   pwmAdjustment = RandomPM1()
+  else:
+   pwmAdjustment = -round(learningRate*previousLoss/derivative)
+  previousPWMs[s] = synapse.pwm
+  synapse.pwm += pwmAdjustment
+  if synapse.pwm > 255:
+   synapse.pwm = 255
+  if synapse.pwm < 0:
+   synapse.pwm = 0
+ previousLoss = loss
+
+def TeachTest(iterations, threshold):
+ global previousLoss
+ global previousPWMs
+ global previousThreshold
+ global nearly0
+ global learningRate
+
+ halfNeuron = BuildHalfNeuron()
+ for synapse in halfNeuron.inputSynapses:
+  synapse.SetPWM(Ran8())
+ for s in range(4):
+  previousPWMs[s] = halfNeuron.inputSynapses[s].pwm + RandomPM1()
+ previousLoss = LossFunction(halfNeuron, threshold)
+
+ for n in range(iterations):
+  Teach(halfNeuron, threshold)
+  print(str(previousLoss) + " | ", end = '')
+  for synapse in halfNeuron.inputSynapses:
+   print(str(synapse.pwm) + ", ", end = '')
+  print()
+
 def OddEvenTest1(threshold):
  halfNeuron = BuildHalfNeuron()
  halfNeuron.inputSynapses[0].SetPWM(0)
@@ -200,8 +257,8 @@ def OddEvenTest1(threshold):
   print(v)
  print("Loss: " + str(LossFunction(halfNeuron, threshold)))
 
-
-OddEvenTest1(3.8)
+TeachTest(10, 3.8)
+#OddEvenTest1(3.8)
 #CallibrationExperiment()
 
 '''
