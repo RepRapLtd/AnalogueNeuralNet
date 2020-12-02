@@ -25,6 +25,7 @@ See: https://reprapltd.com/a-slow-write-fast-read-optical-artificial-neural-netw
 
 import random
 import math
+import sys
 
 def Ran8():
  return random.randint(0, 255)
@@ -42,6 +43,7 @@ s2 = [4.27, 4.51, 4.58, 4.62, 4.64, 4.66, 4.67, 4.68, 4.69, 4.69, 4.7, 4.7, 4.7,
 s4 = [4.53, 4.63, 4.67, 4.71, 4.72, 4.74, 4.74, 4.75, 4.76, 4.77, 4.77, 4.77, 4.78, 4.78, 4.78, 4.78]
 s8 = [4.46, 4.62, 4.67, 4.7, 4.71, 4.73, 4.74, 4.75, 4.75, 4.76, 4.76, 4.77, 4.77, 4.77, 4.77, 4.77]
 pwmIncrement = 17
+empiricalCorrection = 4.01/3.94
 
 # A single synapse.  
 
@@ -129,6 +131,7 @@ class HalfNeuron:
    if synapse.IsFiring():
     allZero = False
    self.volts += synapse.Output()
+  self.volts *= empiricalCorrection
   if allZero:
    self.volts = self.noInput
 
@@ -171,6 +174,7 @@ def CallibrationExperiment():
 
 def LossFunction(halfNeuron, threshold):
  wrong = 0.0
+ count = 0
  for n in range(16):
   SetNumber(n, halfNeuron)
   halfNeuron.Run()
@@ -184,8 +188,27 @@ def LossFunction(halfNeuron, threshold):
     error = True
   d = threshold - v
   if error:
+   count += 1
    wrong += d*d
+ #print(count)
  return wrong
+
+def SampleSpace(halfNeuron, threshold, samples):
+ bestPWMs = [0, 0, 0, 0]
+ bestError = sys.float_info.max
+ for s in range(samples):
+  for synapse in halfNeuron.inputSynapses:
+   synapse.SetPWM(Ran8())
+   loss = LossFunction(halfNeuron, threshold)
+   if loss < bestError:
+    bestError = loss
+    for s in range(4):
+     bestPWMs[s] = halfNeuron.inputSynapses[s].pwm
+ print(str(bestError) + ', ', end = '')
+ for s in range(4):
+  halfNeuron.inputSynapses[s].SetPWM(bestPWMs[s])
+  print(str(bestPWMs[s]) + ', ', end = '')
+ print()
 
 previousLoss = 0.0
 previousPWMs = [0, 0, 0, 0]
@@ -207,9 +230,8 @@ def Teach(halfNeuron, threshold):
   if deltaPWM == 0:
    deltaPWM = RandomPM1()
   derivative = deltaLoss/(deltaPWM + 0.0)
-  print(derivative)
   if math.fabs(derivative) < nearly0:
-   pwmAdjustment = RandomPM1()
+   pwmAdjustment = RandomPM1()*50
   else:
    pwmAdjustment = -round(learningRate*previousLoss/derivative)
   previousPWMs[s] = synapse.pwm
@@ -240,12 +262,9 @@ def TeachTest(iterations, threshold):
   for synapse in halfNeuron.inputSynapses:
    print(str(synapse.pwm) + ", ", end = '')
   print()
+ return halfNeuron
 
-def OddEvenTest1(threshold):
- halfNeuron = BuildHalfNeuron()
- halfNeuron.inputSynapses[0].SetPWM(0)
- for s in range(1, 4):
-  halfNeuron.inputSynapses[s].SetPWM(100)
+def OddEvenTest1(halfNeuron, threshold):
  for n in range(16):
   SetNumber(n, halfNeuron)
   halfNeuron.Run()
@@ -257,8 +276,11 @@ def OddEvenTest1(threshold):
   print(v)
  print("Loss: " + str(LossFunction(halfNeuron, threshold)))
 
-TeachTest(10, 3.8)
-#OddEvenTest1(3.8)
+
+halfNeuron = BuildHalfNeuron()
+SampleSpace(halfNeuron, 3.8, 10)
+#halfNeuron = TeachTest(50, 3.8)
+OddEvenTest1(halfNeuron, 3.8)
 #CallibrationExperiment()
 
 '''
