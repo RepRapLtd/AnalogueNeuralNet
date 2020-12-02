@@ -80,23 +80,6 @@ float ReadValue()
   return (float)v*5.0/1024.0;
 }
 
-void PrintAll()
-{
-
-  for(int n = 0; n < 16; n++)
-  {
-    SetNumber(n);
-    Serial.print(n);
-    float v = ReadValue();
-    if(v > threshold)
-      Serial.print(" is even. dv = ");
-    else
-      Serial.print(" is odd. dv = ");
-    Serial.println(v - threshold); 
-  }
-  Serial.println();
-}
-
 // Set an input pattern: 0 - 15
 
 void SetNumber(int n)
@@ -112,7 +95,6 @@ void SetNumber(int n)
 float LossFunction()
 {
   float wrong = 0.0;
-  float right = 0.0;
   bool error;
   for(int n = 0; n < 16; n++)
   {
@@ -132,13 +114,62 @@ float LossFunction()
     if(error)
     {
       wrong += d*d;
-    } else
-    {
-      right += d*d;
-    }
+    } 
   }
 
-  return wrong - right;
+  return wrong;
+}
+
+void PrintAll()
+{
+  for(int n = 0; n < 16; n++)
+  {
+    SetNumber(n);
+    Serial.print(n);
+    float v = ReadValue();
+    if(v > threshold)
+      Serial.print(" is even. dv = ");
+    else
+      Serial.print(" is odd. dv = ");
+    Serial.println(v - threshold); 
+  }
+  Serial.print("Loss: ")
+  Serial.println(LossFunction());
+}
+
+
+
+// Explore the space
+
+void SampleSpace(int samples, long settlingTime)
+{
+  int bestPWMs[4];
+  float bestError = 3.4028235E+38;
+  for(int s = 0; s < samples; s++)
+  {
+    for(int synapse = 0; synapse < 4; synapse++)
+    {
+      pwms[synapse] = random(256);
+      delay(settlingTime);
+      loss = LossFunction();
+      if(loss < bestError)
+      {
+        bestError = loss;
+        for(s1 = 0; s1 < 4; s1++)
+        {
+          bestPWMs[s1] = pwms[s1];
+        }
+      }
+      Serial.print("Error: ");
+      Serial.println(bestError);
+    }
+  }
+  Serial.println("Setting best result.");
+  for(int synapse = 0; synapse < 4; synapse++)
+  {
+    pwms[synapse] = bestPWMs[synapse];
+  }
+  delay(settlingTime);
 }
 
 
@@ -230,6 +261,9 @@ void RandomPWMs()
 
 float Teach()
 {
+  if(!teaching)
+    return;
+    
   long t = millis();
   if(t - lastTime < settle)
     return;
@@ -295,6 +329,52 @@ float Teach()
   Report(loss);
 
   return loss;
+}
+
+void Help()
+{
+  Serial.println("Commands: ");
+  Serial.println(" ?: Print this list.");
+  Serial.println(" E: Turn on exploring the weights space at random.");
+  Serial.println(" e: Turn off exploring the weights space at random.");  
+  Serial.println(" T: Turn teaching on.");
+  Serial.println(" t: Turn teaching off.");
+  Serial.println(" r: Run a test.");     
+}
+
+void Control()
+{
+  if(!Serial.available())
+   return;
+
+  int c = Serial.read();
+  switch(c)
+  {
+    'E':
+      exploring = false;
+      break;
+
+    'e':
+      exploring = true;
+      break;
+
+    'T':
+      teaching = true;
+      break;
+
+    't':
+      teaching = false;
+      break;
+
+    'r':
+      PrintAll();
+      break;
+    
+    default:
+    '?':
+      Help();
+      break;
+  }
 }
 
 void setup() 
@@ -389,8 +469,7 @@ void setup()
 
 void loop()
 {
-  if(teaching)
-    Teach();
-
-  TestNumber();
+  Teach();
+  Explore();
+  Command();
 }
