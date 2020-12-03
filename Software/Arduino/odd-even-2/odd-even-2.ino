@@ -30,13 +30,18 @@ int pwms[4] = {0, 0, 0, 0}; // About half way for each
 int previouspwms[4];
 float previousLoss;
 bool inputs[4] = {false, false, false, false};
-bool teaching = true;
+bool teaching = false;
+bool exploring = false;
 float threshold = 4.0;
 float previousThreshold;
 float learningRate = 0.2;
 float thresholdLearningRate = 0.2;
 long settle = 120000;
 long lastTime;
+int bestPWMs[4];
+float bestError = 3.4028235E+38;
+int sample;
+int totalSamples;
 
 
 void SetPWMs(bool light)
@@ -133,44 +138,10 @@ void PrintAll()
       Serial.print(" is odd. dv = ");
     Serial.println(v - threshold); 
   }
-  Serial.print("Loss: ")
+  Serial.print("Loss: ");
   Serial.println(LossFunction());
 }
 
-
-
-// Explore the space
-
-void SampleSpace(int samples, long settlingTime)
-{
-  int bestPWMs[4];
-  float bestError = 3.4028235E+38;
-  for(int s = 0; s < samples; s++)
-  {
-    for(int synapse = 0; synapse < 4; synapse++)
-    {
-      pwms[synapse] = random(256);
-      delay(settlingTime);
-      loss = LossFunction();
-      if(loss < bestError)
-      {
-        bestError = loss;
-        for(s1 = 0; s1 < 4; s1++)
-        {
-          bestPWMs[s1] = pwms[s1];
-        }
-      }
-      Serial.print("Error: ");
-      Serial.println(bestError);
-    }
-  }
-  Serial.println("Setting best result.");
-  for(int synapse = 0; synapse < 4; synapse++)
-  {
-    pwms[synapse] = bestPWMs[synapse];
-  }
-  delay(settlingTime);
-}
 
 
 // Allow the user to see if it works.
@@ -259,7 +230,7 @@ void RandomPWMs()
     }  
 }
 
-float Teach()
+void Teach()
 {
   if(!teaching)
     return;
@@ -327,8 +298,119 @@ float Teach()
   previousLoss = loss;
   Adjust(pwmAdjustments, thresholdAdjustment);
   Report(loss);
+}
 
-  return loss;
+void StartTeach()
+{
+  previousLoss = LossFunction();
+
+  // Small purturbations to get initial derivatives.
+
+  for(int synapse = 0; synapse < 4; synapse++)
+  {
+    previouspwms[synapse] = pwms[synapse];
+    pwms[synapse] += RandomPM1();
+  }
+  
+//  previousThreshold = threshold;
+//  threshold += 0.02*(float)RandomPM1();
+  teaching = true;
+  exploring = false;
+  lastTime = millis(); 
+}
+
+void SettleReminder()
+{
+    Serial.print("Wait for the photochromic synapses to settle. The current settling time is ");
+    Serial.print(settle);
+    Serial.println(" milliseconds.");  
+}
+
+// Explore the space
+
+void Explore()
+{
+  if(!exploring)
+    return;
+    
+  long t = millis();
+  if(t - lastTime < settle)
+    return;
+  lastTime = t;
+
+  sample++;
+
+  if(sample >= totalSamples)
+  {
+    Serial.print("Exploring finished.\nSetting the best result: ");
+    for(int synapse = 0; synapse < 4; synapse++)
+    {
+      pwms[synapse] = bestPWMs[synapse];
+      Serial.print(pwms[synapse]);
+      Serial.print(", ");
+    }
+    SetPWMs(true);
+    Serial.print(" lowest error: ");
+    Serial.println(bestError);
+    SettleReminder();
+    exploring = false;
+    return;
+  }
+
+  float loss = LossFunction();
+  Serial.print("Exploring step ");
+  Serial.print(sample);
+  Serial.print('/');
+  Serial.print(totalSamples);
+  Serial.print(". Current loss: ");
+  Serial.print(loss);
+  if(loss < bestError)
+  {
+    Serial.print(" is an improvement. PWMs: ");
+    bestError = loss;
+    for(int synapse = 0; synapse < 4; synapse++)
+    {
+      Serial.print(pwms[synapse]);
+      if(synapse < 3)
+        Serial.print(", ");
+      bestPWMs[synapse] = pwms[synapse];
+    }
+  }
+  Serial.println();
+  
+  for(int synapse = 0; synapse < 4; synapse++)
+  {
+    pwms[synapse] = random(256);
+  }
+  SetPWMs(true);
+}
+
+void StartExplore(int samples)
+{
+  Serial.println("Start with the current pattern (y/n)? ");
+  while(Serial.available() <= 0);
+  int resp = Serial.read();
+  Serial.println(resp);  
+  while(Serial.available()) Serial.read();
+  
+  if(resp == 'n')
+  {
+    Serial.print("Setting new random pattern: ");
+    for(int synapse = 0; synapse < 4; synapse++)
+    {
+      pwms[synapse] = random(256);
+      Serial.print(pwms[synapse]);
+      if(synapse < 3)
+          Serial.print(", ");
+    }
+    Serial.println();
+  }
+  SetPWMs(true);
+  sample = 0;
+  totalSamples = samples;
+  exploring = true;
+  teaching = false;
+  lastTime = millis(); 
 }
 
 void Help()
@@ -339,7 +421,13 @@ void Help()
   Serial.println(" e: Turn off exploring the weights space at random.");  
   Serial.println(" T: Turn teaching on.");
   Serial.println(" t: Turn teaching off.");
-  Serial.println(" r: Run a test.");     
+  Serial.println(" s: Setrandom seed.");
+  Serial.println(" h: Set threshold.");
+  Serial.println(" m: Set settling time.");      
+  Serial.println(" r: Run a test.");
+  Serial.println(" p: Print the current PWM pattern and threshold.");  
+  Serial.println(" P: Set a PWM pattern.");
+  Serial.println(" 0: Reset exploration.");       
 }
 
 void Control()
@@ -348,33 +436,96 @@ void Control()
    return;
 
   int c = Serial.read();
+  int n;
   switch(c)
   {
-    'E':
+    case 'e':
       exploring = false;
+      Serial.println("Not exploring.");
       break;
 
-    'e':
-      exploring = true;
+    case 'E':
+      Serial.print("Number of points in the search space: ");
+      while(Serial.available() <= 0);
+      n = Serial.parseInt();
+      StartExplore(n);
+      Serial.println(n);  
       break;
 
-    'T':
-      teaching = true;
-      break;
-
-    't':
+    case 't':
       teaching = false;
+      Serial.println("Not teaching.");
       break;
 
-    'r':
+    case 'T':
+      StartTeach();
+      break;
+
+    case 'r':
       PrintAll();
       break;
-    
+
+    case 's':
+      Serial.print("Random seed: ");
+      while(Serial.available() <= 0);
+      n = Serial.parseInt();
+      randomSeed(n);
+      Serial.println(n);      
+      break; 
+
+    case 'm':
+      Serial.print("Settling time (ms): ");
+      while(Serial.available() <= 0);
+      settle = Serial.parseInt();
+      Serial.println(settle);      
+      break;   
+
+    case 'h':
+      Serial.print("Threshold in [0.0, 5.0]: ");
+      while(Serial.available() <= 0);
+      threshold = Serial.parseFloat();
+      Serial.println(threshold);  
+      break;
+
+    case '0':
+      bestError = 3.4028235E+38;
+      break;
+
+    case 'p':
+      Serial.print("PWM pattern: ");
+      for(int synapse = 0; synapse < 4; synapse++)
+      {
+        Serial.print(pwms[synapse]);
+        Serial.print(", ");
+      }
+      Serial.print("threashold: ");
+      Serial.println(threshold);    
+      break;   
+
+    case 'P':
+      Serial.print("PWM pattern (4 numbers in [0, 255]): ");
+      for(int synapse = 0; synapse < 4; synapse++)
+      {
+        while(Serial.available() <= 0);
+        pwms[synapse] = Serial.parseInt();
+        Serial.print(pwms[synapse]);
+        if(synapse < 3)
+          Serial.print(", ");
+      }
+      Serial.println();
+      SetPWMs(true);
+      SettleReminder();      
+      break;                 
+
+  
+      
     default:
-    '?':
+    case '?':
       Help();
       break;
   }
+  delay(100); // What????
+  while(Serial.available()) Serial.read();
 }
 
 void setup() 
@@ -389,79 +540,15 @@ void setup()
   SetPWMs(false);
   SetLEDs(false);
 
-
-
   Serial.begin(BAUD);
-  Serial.println("RepRap Ltd Optical Half-Neuron Starting");
-  Serial.println("Type an integer in [0, 15] at any time to test if it works.");
-  Serial.println("Type a negative number to stop teaching; >16 to print all inputs.");
-  Serial.print("Random seed: ");
-  while(Serial.available() <= 0);
-  int n = Serial.parseInt();
-  while(Serial.available()) Serial.read();
-  Serial.println(n); 
-  randomSeed(n);
-
-  
-  Serial.print("4 starting PWMs (-1 to use random): ");
-
-  while(Serial.available() <= 0);
-  n = Serial.parseInt();
-  while(Serial.available()) Serial.read();
-  Serial.println(n); 
-    
-  if(n < 0)
-  {
-    RandomPWMs();
-  } else
-  {
-    pwms[0] = n;
-    for(int synapse = 1; synapse < 4; synapse++)
-    {
-      while(Serial.available() <= 0);
-      pwms[synapse] = Serial.parseInt();
-      while(Serial.available()) Serial.read();
-    }  
-  }
-
-  SetPWMs(true);  
-
-  Serial.print("Initial threshold: ");
-  while(Serial.available() <= 0);
-  threshold = Serial.parseFloat();
-  while(Serial.available()) Serial.read();
-  Serial.println(threshold);
-
-  Serial.print("Settling time (ms): ");
-  while(Serial.available() <= 0);
-  settle = Serial.parseInt();
-  while(Serial.available()) Serial.read();
-  Serial.println(settle); 
-
+  Serial.println("RepRap Ltd Optical Half-Neuron Starting\n");
 
   // Having a timeout on serial input is very silly and annoying.
   
   Serial.setTimeout(30000);
-  for(int synapse = 0; synapse < 4; synapse++)
-    previouspwms[synapse] = pwms[synapse];
-  Report(-1.0);
-  delay(settle);
-  previousLoss = LossFunction();
 
-  // Small purturbations to get initial derivatives.
+  Help();
 
-  for(int synapse = 0; synapse < 4; synapse++)
-  {
-    previouspwms[synapse] = pwms[synapse];
-    pwms[synapse] += RandomPM1();
-  }
-  
-  previousThreshold = threshold;
-  threshold += 0.02*(float)RandomPM1();
-
-  SetPWMs(true);
-
-  Report(previousLoss);
   lastTime = millis();
 }
 
@@ -471,5 +558,6 @@ void loop()
 {
   Teach();
   Explore();
-  Command();
+  Control();
+  Serial.flush();
 }
