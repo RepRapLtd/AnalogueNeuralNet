@@ -1,0 +1,232 @@
+Commands: 
+ ?: Print this list.
+ E: Turn on exploring the weights space at random.
+ e: Turn off exploring the weights space at random.
+ T: Turn teaching on.
+ t: Turn teaching off.
+ s: Setrandom seed.
+ h: Set threshold.
+ m: Set settling time.
+ r: Run a test.
+ p: Print the current PWM pattern and threshold.
+ P: Set a PWM pattern.
+ 0: Reset exploration.
+Threshold in [0.0, 5.0]: 4.30
+Random seed: 7893
+Settling time (ms): 180000
+Number of points in the search space: Start with the current pattern (y/n)? 
+10
+160
+Commands: 
+ ?: Print this list.
+ E: Turn on exploring the weights space at random.
+ e: Turn off exploring the weights space at random.
+ T: Turn teaching on.
+ t: Turn teaching off.
+ s: Setrandom seed.
+ h: Set threshold.
+ m: Set settling time.
+ r: Run a test.
+ p: Print the current PWM pattern and threshold.
+ P: Set a PWM pattern.
+ 0: Reset exploration.
+PWM pattern: 0, 0, 0, 0, threashold: 4.30
+0 is even. dv = 0.70
+1 is even. dv = 0.19
+2 is even. dv = 0.05
+3 is odd. dv = -0.49
+4 is even. dv = 0.29
+5 is odd. dv = -0.24
+6 is odd. dv = -0.38
+7 is odd. dv = -0.92
+8 is even. dv = 0.25
+9 is odd. dv = -0.29
+10 is odd. dv = -0.43
+11 is odd. dv = -0.97
+12 is odd. dv = -0.17
+13 is odd. dv = -0.71
+14 is odd. dv = -0.86
+15 is odd. dv = -1.40
+Loss: 1.08
+PWM pattern: 0, 0, 0, 0, threashold: 4.30
+Exploring step 1/160. Current loss: 1.10 is an improvement. PWMs: 0, 0, 0, 0
+PWM pattern: 243, 147, 216, 22, threashold: 4.30
+Exploring step 2/160. Current loss: 0.38 is an improvement. PWMs: 243, 147, 216, 22
+Exploring step 3/160. Current loss: 0.37 is an improvement. PWMs: 151, 40, 43, 68
+Exploring step 4/160. Current loss: 0.38
+Exploring step 5/160. Current loss: 0.27 is an improvement. PWMs: 26, 26, 148, 103
+Exploring step 6/160. Current loss: 0.39
+Exploring step 7/160. Current loss: 0.40
+Exploring step 8/160. Current loss: 0.34
+Exploring step 9/160. Current loss: 0.40
+Exploring step 10/160. Current loss: 0.37
+Exploring step 11/160. Current loss: 0.37
+Exploring step 12/160. Current loss: 0.37
+Exploring step 13/160. Current loss: 0.34
+Exploring step 14/160. Current loss: 0.24 is an improvement. PWMs: 18, 141, 14, 15
+Exploring step 15/160. Current loss: 0.31
+Exploring step 16/160. Current loss: 0.40
+Exploring step 17/160. Current loss: 0.40
+Exploring step 18/160. Current loss: 0.33
+Exploring step 19/160. Current loss: 0.34
+Exploring step 20/160. Current loss: 0.39
+Exploring step 21/160. Current loss: 0.38
+Exploring step 22/160. Current loss: 0.27
+Exploring step 23/160. Current loss: 0.38
+Exploring step 24/160. Current loss: 0.36
+Exploring step 25/160. Current loss: 0.34
+Exploring step 26/160. Current loss: 0.38
+Exploring step 27/160. Current loss: 0.33
+Exploring step 28/160. Current loss: 0.40
+Exploring step 29/160. Current loss: 0.36
+Exploring step 30/160. Current loss: 0.37
+Exploring step 31/160. Current loss: 0.41
+Exploring step 32/160. Current loss: 0.35
+Exploring step 33/160. Current loss: 0.28
+Exploring step 34/160. Current loss: 0.34
+Exploring step 35/160. Current loss: 0.40
+Exploring step 36/160. Current loss: 0.40
+Exploring step 37/160. Current loss: 0.38
+Exploring step 38/160. Current loss: 0.34
+Exploring step 39/160. Current loss: 0.37
+Exploring step 40/160. Current loss: 0.39
+Exploring step 41/160. Current loss: 0.40
+Exploring step 42/160. Current loss: 0.38
+Exploring step 43/160. Current loss: 0.30
+Exploring step 44/160. Current loss: 0.40
+Exploring step 45/160. Current loss: 0.38
+Exploring step 46/160. Current loss: 0.37
+Exploring step 47/160. Current loss: 0.35
+Exploring step 48/160. Current loss: 0.39
+Exploring step 49/160. Current loss: 0.38
+Exploring step 50/160. Current loss: 0.38
+Exploring step 51/160. Current loss: 0.39
+Exploring step 52/160. Current loss: 0.41
+Exploring step 53/160. Current loss: 0.39
+Exploring step 54/160. Current loss: 0.32
+Exploring step 55/160. Current loss: 0.40
+Exploring step 56/160. Current loss: 0.38
+Exploring step 57/160. Current loss: 0.39
+Exploring step 58/160. Current loss: 0.30
+Exploring step 59/160. Current loss: 0.40
+Exploring step 60/160. Current loss: 0.39
+Exploring step 61/160. Current loss: 0.37
+Exploring step 62/160. Current loss: 0.38
+Exploring step 63/160. Current loss: 0.42
+Exploring step 64/160. Current loss: 0.39
+Exploring step 65/160. Current loss: 0.37
+Exploring step 66/160. Current loss: 0.34
+Exploring step 67/160. Current loss: 0.37
+Exploring step 68/160. Current loss: 0.42
+Exploring step 69/160. Current loss: 0.39
+Exploring step 70/160. Current loss: 0.24 is an improvement. PWMs: 13, 252, 67, 186
+Exploring step 71/160. Current loss: 0.40
+Exploring step 72/160. Current loss: 0.41
+Exploring step 73/160. Current loss: 0.25
+Exploring step 74/160. Current loss: 0.31
+Exploring step 75/160. Current loss: 0.42
+Exploring step 76/160. Current loss: 0.36
+Exploring step 77/160. Current loss: 0.42
+Exploring step 78/160. Current loss: 0.34
+Exploring step 79/160. Current loss: 0.43
+Exploring step 80/160. Current loss: 0.43
+Exploring step 81/160. Current loss: 0.23 is an improvement. PWMs: 10, 55, 20, 35
+Exploring step 82/160. Current loss: 0.42
+Exploring step 83/160. Current loss: 0.33
+Exploring step 84/160. Current loss: 0.41
+Exploring step 85/160. Current loss: 0.40
+Exploring step 86/160. Current loss: 0.41
+Exploring step 87/160. Current loss: 0.41
+Exploring step 88/160. Current loss: 0.32
+Exploring step 89/160. Current loss: 0.39
+Exploring step 90/160. Current loss: 0.35
+Exploring step 91/160. Current loss: 0.38
+Exploring step 92/160. Current loss: 0.36
+Exploring step 93/160. Current loss: 0.27
+Exploring step 94/160. Current loss: 0.35
+Exploring step 95/160. Current loss: 0.37
+Exploring step 96/160. Current loss: 0.25
+Exploring step 97/160. Current loss: 0.44
+Exploring step 98/160. Current loss: 0.40
+Exploring step 99/160. Current loss: 0.23 is an improvement. PWMs: 3, 1, 77, 119
+Exploring step 100/160. Current loss: 0.44
+Exploring step 101/160. Current loss: 0.36
+Exploring step 102/160. Current loss: 0.37
+Exploring step 103/160. Current loss: 0.41
+Exploring step 104/160. Current loss: 0.42
+Exploring step 105/160. Current loss: 0.40
+Exploring step 106/160. Current loss: 0.41
+Exploring step 107/160. Current loss: 0.40
+Exploring step 108/160. Current loss: 0.41
+Exploring step 109/160. Current loss: 0.42
+Exploring step 110/160. Current loss: 0.40
+Exploring step 111/160. Current loss: 0.42
+Exploring step 112/160. Current loss: 0.27
+Exploring step 113/160. Current loss: 0.14 is an improvement. PWMs: 0, 172, 94, 5
+Exploring step 114/160. Current loss: 0.36
+Exploring step 115/160. Current loss: 0.34
+Exploring step 116/160. Current loss: 0.44
+Exploring step 117/160. Current loss: 0.38
+Exploring step 118/160. Current loss: 0.38
+Exploring step 119/160. Current loss: 0.45
+Exploring step 120/160. Current loss: 0.43
+Exploring step 121/160. Current loss: 0.41
+Exploring step 122/160. Current loss: 0.42
+Exploring step 123/160. Current loss: 0.42
+Exploring step 124/160. Current loss: 0.36
+Exploring step 125/160. Current loss: 0.39
+Exploring step 126/160. Current loss: 0.41
+Exploring step 127/160. Current loss: 0.42
+Exploring step 128/160. Current loss: 0.43
+Exploring step 129/160. Current loss: 0.35
+Exploring step 130/160. Current loss: 0.39
+Exploring step 131/160. Current loss: 0.40
+Exploring step 132/160. Current loss: 0.40
+Exploring step 133/160. Current loss: 0.43
+Exploring step 134/160. Current loss: 0.39
+Exploring step 135/160. Current loss: 0.44
+Exploring step 136/160. Current loss: 0.20
+Exploring step 137/160. Current loss: 0.41
+Exploring step 138/160. Current loss: 0.41
+Exploring step 139/160. Current loss: 0.28
+Exploring step 140/160. Current loss: 0.40
+Exploring step 141/160. Current loss: 0.44
+Exploring step 142/160. Current loss: 0.32
+Exploring step 143/160. Current loss: 0.43
+Exploring step 144/160. Current loss: 0.45
+Exploring step 145/160. Current loss: 0.43
+Exploring step 146/160. Current loss: 0.41
+Exploring step 147/160. Current loss: 0.39
+Exploring step 148/160. Current loss: 0.40
+Exploring step 149/160. Current loss: 0.41
+Exploring step 150/160. Current loss: 0.29
+Exploring step 151/160. Current loss: 0.43
+Exploring step 152/160. Current loss: 0.28
+Exploring step 153/160. Current loss: 0.42
+Exploring step 154/160. Current loss: 0.29
+Exploring step 155/160. Current loss: 0.43
+Exploring step 156/160. Current loss: 0.30
+Exploring step 157/160. Current loss: 0.41
+Exploring step 158/160. Current loss: 0.41
+Exploring step 159/160. Current loss: 0.44
+Exploring finished.
+Setting the best result: 0, 172, 94, 5,  lowest error: 0.14
+Wait for the photochromic synapses to settle. The current settling time is 180000 milliseconds.
+0 is even. dv = 0.70
+1 is even. dv = 0.25
+2 is even. dv = 0.43
+3 is odd. dv = -0.03
+4 is even. dv = 0.49
+5 is even. dv = 0.04
+6 is even. dv = 0.22
+7 is odd. dv = -0.24
+8 is even. dv = 0.38
+9 is odd. dv = -0.08
+10 is even. dv = 0.10
+11 is odd. dv = -0.36
+12 is even. dv = 0.18
+13 is odd. dv = -0.28
+14 is odd. dv = -0.10
+15 is odd. dv = -0.56
+Loss: 0.07
+
