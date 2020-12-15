@@ -1,0 +1,324 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L power:+5V #PWR?
+U 1 1 5FD8E700
+P 2875 3850
+F 0 "#PWR?" H 2875 3700 50  0001 C CNN
+F 1 "+5V" H 2890 4023 50  0000 C CNN
+F 2 "" H 2875 3850 50  0001 C CNN
+F 3 "" H 2875 3850 50  0001 C CNN
+	1    2875 3850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2400 4000 2875 4000
+Wire Wire Line
+	2875 4000 2875 3850
+$Comp
+L power:GND #PWR?
+U 1 1 5FD8EC28
+P 2875 4700
+F 0 "#PWR?" H 2875 4450 50  0001 C CNN
+F 1 "GND" H 2880 4527 50  0000 C CNN
+F 2 "" H 2875 4700 50  0001 C CNN
+F 3 "" H 2875 4700 50  0001 C CNN
+	1    2875 4700
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 5FD8EFBA
+P 3300 3050
+F 0 "R?" V 3093 3050 50  0000 C CNN
+F 1 "33K" V 3184 3050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 3230 3050 50  0001 C CNN
+F 3 "~" H 3300 3050 50  0001 C CNN
+	1    3300 3050
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5FD8F543
+P 3600 3275
+F 0 "C?" H 3715 3321 50  0000 L CNN
+F 1 "220nF" H 3715 3230 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 3638 3125 50  0001 C CNN
+F 3 "~" H 3600 3275 50  0001 C CNN
+	1    3600 3275
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3450 3050 3600 3050
+Wire Wire Line
+	3600 3050 3600 3125
+$Comp
+L Amplifier_Operational:OPA2277 U?
+U 1 1 5FD911C5
+P 4575 3150
+F 0 "U?" H 4575 3517 50  0000 C CNN
+F 1 "TLC2272" H 4575 3426 50  0000 C CNN
+F 2 "Package_SO:SOIC-8-N7_3.9x4.9mm_P1.27mm" H 4575 3150 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/opa2277.pdf" H 4575 3150 50  0001 C CNN
+	1    4575 3150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3600 3050 4275 3050
+Connection ~ 3600 3050
+Wire Wire Line
+	4875 3150 5025 3150
+Wire Wire Line
+	5325 3350 5325 3425
+Wire Wire Line
+	5325 3425 4200 3425
+Wire Wire Line
+	4200 3425 4200 3250
+Wire Wire Line
+	4200 3250 4275 3250
+$Comp
+L power:+5V #PWR?
+U 1 1 5FD945E2
+P 5325 2825
+F 0 "#PWR?" H 5325 2675 50  0001 C CNN
+F 1 "+5V" H 5340 2998 50  0000 C CNN
+F 2 "" H 5325 2825 50  0001 C CNN
+F 3 "" H 5325 2825 50  0001 C CNN
+	1    5325 2825
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5325 2950 5325 2875
+Wire Wire Line
+	5325 3475 5325 3425
+Connection ~ 5325 3425
+$Comp
+L adafruit-new:LED3MM LED?
+U 1 1 5FD9907B
+P 5325 3950
+F 0 "LED?" H 5402 3942 45  0000 L CNN
+F 1 "LED3MM" H 5402 3858 45  0000 L CNN
+F 2 "adafruit-new_LED3MM" H 5355 4100 20  0001 C CNN
+F 3 "" H 5325 3950 50  0001 C CNN
+	1    5325 3950
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5325 3775 5325 3850
+Wire Wire Line
+	5325 4150 5325 4250
+Wire Wire Line
+	4975 4450 5025 4450
+$Comp
+L power:GND #PWR?
+U 1 1 5FD9D426
+P 5325 4725
+F 0 "#PWR?" H 5325 4475 50  0001 C CNN
+F 1 "GND" H 5330 4552 50  0000 C CNN
+F 2 "" H 5325 4725 50  0001 C CNN
+F 3 "" H 5325 4725 50  0001 C CNN
+	1    5325 4725
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5325 4650 5325 4675
+$Comp
+L Device:C C?
+U 1 1 5FD9E562
+P 3225 4175
+F 0 "C?" H 3340 4221 50  0000 L CNN
+F 1 "100nF" H 3340 4130 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 3263 4025 50  0001 C CNN
+F 3 "~" H 3225 4175 50  0001 C CNN
+	1    3225 4175
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Q_Photo_NPN Q?
+U 1 1 5FDABAC1
+P 7150 4075
+F 0 "Q?" H 7340 4121 50  0000 L CNN
+F 1 "Q_Photo_NPN" H 7340 4030 50  0000 L CNN
+F 2 "" H 7350 4175 50  0001 C CNN
+F 3 "~" H 7150 4075 50  0001 C CNN
+	1    7150 4075
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5325 4675 5900 4675
+Connection ~ 5325 4675
+Wire Wire Line
+	5325 4675 5325 4725
+Wire Wire Line
+	5325 2875 5900 2875
+Wire Wire Line
+	5900 2875 5900 3450
+Connection ~ 5325 2875
+Wire Wire Line
+	5325 2875 5325 2825
+Text GLabel 6100 3775 2    50   Input ~ 0
+Vout
+Wire Wire Line
+	6100 3775 5900 3775
+Connection ~ 5900 3775
+Wire Wire Line
+	5900 3775 5900 3750
+Text GLabel 2650 4300 2    50   Input ~ 0
+Vout
+Wire Wire Line
+	2400 4300 2650 4300
+Text GLabel 4550 4450 0    50   Input ~ 0
+LEDon
+Wire Wire Line
+	4550 4450 4675 4450
+Text GLabel 2650 4200 2    50   Input ~ 0
+LEDon
+Wire Wire Line
+	2400 4200 2650 4200
+$Comp
+L power:GND #PWR?
+U 1 1 5FDB2DF1
+P 3600 3550
+F 0 "#PWR?" H 3600 3300 50  0001 C CNN
+F 1 "GND" H 3605 3377 50  0000 C CNN
+F 2 "" H 3600 3550 50  0001 C CNN
+F 3 "" H 3600 3550 50  0001 C CNN
+	1    3600 3550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3600 3425 3600 3550
+Text GLabel 3075 3050 0    50   Input ~ 0
+PWMin
+Wire Wire Line
+	3150 3050 3075 3050
+Text GLabel 2650 4100 2    50   Input ~ 0
+PWMin
+Wire Wire Line
+	2650 4100 2400 4100
+Wire Wire Line
+	2875 4000 3225 4000
+Connection ~ 2875 4000
+Wire Wire Line
+	3225 4000 3225 4025
+$Comp
+L Connector:Conn_01x02_Female J?
+U 1 1 5FDD5DC1
+P 6100 3975
+F 0 "J?" H 6128 3951 50  0000 L CNN
+F 1 "Conn_01x02_Female" H 6128 3860 50  0000 L CNN
+F 2 "" H 6100 3975 50  0001 C CNN
+F 3 "~" H 6100 3975 50  0001 C CNN
+	1    6100 3975
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5900 3775 5900 3975
+Wire Wire Line
+	5900 4075 5900 4675
+$Comp
+L Connector:Conn_01x05_Female J?
+U 1 1 5FDD826E
+P 2200 4200
+F 0 "J?" H 2092 3775 50  0000 C CNN
+F 1 "Conn_01x05_Female" H 2092 3866 50  0000 C CNN
+F 2 "" H 2200 4200 50  0001 C CNN
+F 3 "~" H 2200 4200 50  0001 C CNN
+	1    2200 4200
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2400 4400 2875 4400
+Wire Wire Line
+	3225 4400 3225 4325
+Connection ~ 2875 4400
+Wire Wire Line
+	2875 4400 3225 4400
+Wire Wire Line
+	2875 4400 2875 4700
+$Comp
+L Connector:Conn_01x02_Male J?
+U 1 1 5FDDFFF1
+P 7725 3975
+F 0 "J?" H 7697 3857 50  0000 R CNN
+F 1 "Conn_01x02_Male" H 7697 3948 50  0000 R CNN
+F 2 "" H 7725 3975 50  0001 C CNN
+F 3 "~" H 7725 3975 50  0001 C CNN
+	1    7725 3975
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7525 3875 7250 3875
+Wire Wire Line
+	7525 3975 7525 4275
+Wire Wire Line
+	7525 4275 7250 4275
+$Comp
+L Device:R R?
+U 1 1 5FDE88F2
+P 5325 3625
+F 0 "R?" H 5255 3579 50  0000 R CNN
+F 1 "100R" H 5255 3670 50  0000 R CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 5255 3625 50  0001 C CNN
+F 3 "~" H 5325 3625 50  0001 C CNN
+	1    5325 3625
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 5FDE904A
+P 5900 3600
+F 0 "R?" H 5830 3554 50  0000 R CNN
+F 1 "3K3" H 5830 3645 50  0000 R CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 5830 3600 50  0001 C CNN
+F 3 "~" H 5900 3600 50  0001 C CNN
+	1    5900 3600
+	-1   0    0    1   
+$EndComp
+$Comp
+L Transistor_FET:BS170F Q?
+U 1 1 5FDED525
+P 5225 4450
+F 0 "Q?" H 5430 4496 50  0000 L CNN
+F 1 "BS170F" H 5430 4405 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 5425 4375 50  0001 L CIN
+F 3 "http://www.diodes.com/assets/Datasheets/BS170F.pdf" H 5225 4450 50  0001 L CNN
+	1    5225 4450
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 5FDF6358
+P 4825 4450
+F 0 "R?" V 5032 4450 50  0000 C CNN
+F 1 "10K" V 4941 4450 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4755 4450 50  0001 C CNN
+F 3 "~" H 4825 4450 50  0001 C CNN
+	1    4825 4450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Transistor_BJT:MMBT3904 Q?
+U 1 1 5FDF7F6A
+P 5225 3150
+F 0 "Q?" H 5416 3196 50  0000 L CNN
+F 1 "MMBT3904" H 5416 3105 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 5425 3075 50  0001 L CIN
+F 3 "https://www.fairchildsemi.com/datasheets/2N/2N3904.pdf" H 5225 3150 50  0001 L CNN
+	1    5225 3150
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
