@@ -46,7 +46,7 @@ void loop()
       Serial.print(", ");
       Serial.println(Read());
     }
-    
+    SetPWM(0);
     while(1);
 /*  if(saw)
   {
