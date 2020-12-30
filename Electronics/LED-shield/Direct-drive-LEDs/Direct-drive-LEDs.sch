@@ -150,10 +150,8 @@ Text GLabel 2775 5900 2    50   Input ~ 0
 Vout
 Wire Wire Line
 	2525 5900 2775 5900
-Text GLabel 4550 4450 0    50   Input ~ 0
+Text GLabel 3075 4450 0    50   Input ~ 0
 LEDon
-Wire Wire Line
-	4550 4450 4675 4450
 Text GLabel 2775 5800 2    50   Input ~ 0
 LEDon
 Wire Wire Line
@@ -351,4 +349,6 @@ Wire Wire Line
 Wire Wire Line
 	3600 3425 3600 4725
 Connection ~ 4075 4725
+Wire Wire Line
+	3075 4450 4675 4450
 $EndSCHEMATC

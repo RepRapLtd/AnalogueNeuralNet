@@ -1,0 +1,182 @@
+RepRap Ltd Optical Half-Neuron Starting
+
+Commands: 
+ ?: Print this list.
+ E: Turn on exploring the weights space at random.
+ e: Turn off exploring the weights space at random.
+ T: Turn teaching on.
+ t: Turn teaching off.
+ s: Setrandom seed.
+ h: Set threshold.
+ m: Set settling time.
+ r: Run a test.
+ p: Print the current PWM pattern and threshold.
+ P: Set a PWM pattern.
+ f: Set input false/true pattern.
+ 0: Reset exploration.
+ L: Turn the LEDs on.
+ l: Turn the LEDs off.
+ v: Read the voltage.
+Number of points in the search space: Start with the current pattern (y/n)? 
+10
+20
+Exploring step 1/20. Current loss: 7.64 is an improvement. PWMs: 0, 0, 0, 0
+Exploring step 2/20. Current loss: 73.59
+Exploring step 3/20. Current loss: 78.09
+Exploring step 4/20. Current loss: 50.77
+Exploring step 5/20. Current loss: 73.19
+Exploring step 6/20. Current loss: 39.02
+Exploring step 7/20. Current loss: 0.01 is an improvement. PWMs: 47, 17, 45, 5
+Exploring step 8/20. Current loss: 67.66
+Exploring step 9/20. Current loss: 41.00
+Exploring step 10/20. Current loss: 24.55
+Exploring step 11/20. Current loss: 21.81
+Exploring step 12/20. Current loss: 62.39
+Exploring step 13/20. Current loss: 30.20
+Exploring step 14/20. Current loss: 24.41
+Exploring step 15/20. Current loss: 53.81
+Exploring step 16/20. Current loss: 56.32
+Exploring step 17/20. Current loss: 73.96
+Exploring step 18/20. Current loss: 77.02
+Exploring step 19/20. Current loss: 45.26
+Exploring finished.
+Setting the best result: 47, 17, 45, 5,  lowest error: 0.01
+0 is even. dv = 1.00
+1 is odd. dv = -1.56
+2 is even. dv = 0.73
+3 is odd. dv = -1.72
+4 is even. dv = 0.21
+5 is odd. dv = -2.27
+6 is odd. dv = -0.08
+7 is odd. dv = -2.46
+8 is even. dv = 1.00
+9 is odd. dv = -1.48
+10 is even. dv = 0.73
+11 is odd. dv = -1.75
+12 is even. dv = 0.18
+13 is odd. dv = -2.35
+14 is odd. dv = -0.11
+15 is odd. dv = -2.62
+Loss: 0.02
+Number of points in the search space: Start with the current pattern (y/n)? 
+10
+100
+Exploring step 1/100. Current loss: 0.01 is an improvement. PWMs: 47, 17, 45, 5
+Exploring step 2/100. Current loss: 67.49
+Exploring step 3/100. Current loss: 76.25
+Exploring step 4/100. Current loss: 78.10
+Exploring step 5/100. Current loss: 67.65
+Exploring step 6/100. Current loss: 56.63
+Exploring step 7/100. Current loss: 53.67
+Exploring step 8/100. Current loss: 60.17
+Exploring step 9/100. Current loss: 24.97
+Exploring step 10/100. Current loss: 65.23
+Exploring step 11/100. Current loss: 71.98
+Exploring step 12/100. Current loss: 46.56
+Exploring step 13/100. Current loss: 57.37
+Exploring step 14/100. Current loss: 64.81
+Exploring step 15/100. Current loss: 76.85
+Exploring step 16/100. Current loss: 49.93
+Exploring step 17/100. Current loss: 64.98
+Exploring step 18/100. Current loss: 48.34
+Exploring step 19/100. Current loss: 65.98
+Exploring step 20/100. Current loss: 4.21
+Exploring step 21/100. Current loss: 55.85
+Exploring step 22/100. Current loss: 36.72
+Exploring step 23/100. Current loss: 73.20
+Exploring step 24/100. Current loss: 72.15
+Exploring step 25/100. Current loss: 3.59
+Exploring step 26/100. Current loss: 35.73
+Exploring step 27/100. Current loss: 72.80
+Exploring step 28/100. Current loss: 50.93
+Exploring step 29/100. Current loss: 59.05
+Exploring step 30/100. Current loss: 74.51
+Exploring step 31/100. Current loss: 58.81
+Exploring step 32/100. Current loss: 73.45
+Exploring step 33/100. Current loss: 57.69
+Exploring step 34/100. Current loss: 62.90
+Exploring step 35/100. Current loss: 72.80
+Exploring step 36/100. Current loss: 47.68
+Exploring step 37/100. Current loss: 56.01
+Exploring step 38/100. Current loss: 76.50
+Exploring step 39/100. Current loss: 74.78
+Exploring step 40/100. Current loss: 57.70
+Exploring step 41/100. Current loss: 10.80
+Exploring step 42/100. Current loss: 62.38
+Exploring step 43/100. Current loss: 68.31
+Exploring step 44/100. Current loss: 77.16
+Exploring step 45/100. Current loss: 69.08
+Exploring step 46/100. Current loss: 48.35
+Exploring step 47/100. Current loss: 64.10
+Exploring step 48/100. Current loss: 59.92
+Exploring step 49/100. Current loss: 28.40
+Exploring step 50/100. Current loss: 49.32
+Exploring step 51/100. Current loss: 56.68
+Exploring step 52/100. Current loss: 73.45
+Exploring step 53/100. Current loss: 68.26
+Exploring step 54/100. Current loss: 74.14
+Exploring step 55/100. Current loss: 0.00 is an improvement. PWMs: 50, 19, 1, 9
+Exploring step 56/100. Current loss: 0.00
+Exploring step 57/100. Current loss: 61.98
+Exploring step 58/100. Current loss: 51.19
+Exploring step 59/100. Current loss: 76.77
+Exploring step 60/100. Current loss: 70.69
+Exploring step 61/100. Current loss: 50.66
+Exploring step 62/100. Current loss: 70.83
+Exploring step 63/100. Current loss: 54.58
+Exploring step 64/100. Current loss: 55.87
+Exploring step 65/100. Current loss: 27.97
+Exploring step 66/100. Current loss: 47.90
+Exploring step 67/100. Current loss: 64.70
+Exploring step 68/100. Current loss: 72.46
+Exploring step 69/100. Current loss: 36.11
+Exploring step 70/100. Current loss: 51.53
+Exploring step 71/100. Current loss: 4.07
+Exploring step 72/100. Current loss: 64.06
+Exploring step 73/100. Current loss: 73.50
+Exploring step 74/100. Current loss: 74.94
+Exploring step 75/100. Current loss: 63.30
+Exploring step 76/100. Current loss: 62.03
+Exploring step 77/100. Current loss: 59.14
+Exploring step 78/100. Current loss: 54.83
+Exploring step 79/100. Current loss: 47.37
+Exploring step 80/100. Current loss: 52.62
+Exploring step 81/100. Current loss: 68.04
+Exploring step 82/100. Current loss: 33.16
+Exploring step 83/100. Current loss: 10.30
+Exploring step 84/100. Current loss: 52.88
+Exploring step 85/100. Current loss: 76.19
+Exploring step 86/100. Current loss: 49.59
+Exploring step 87/100. Current loss: 0.51
+Exploring step 88/100. Current loss: 51.93
+Exploring step 89/100. Current loss: 69.92
+Exploring step 90/100. Current loss: 65.98
+Exploring step 91/100. Current loss: 63.78
+Exploring step 92/100. Current loss: 51.58
+Exploring step 93/100. Current loss: 42.18
+Exploring step 94/100. Current loss: 65.71
+Exploring step 95/100. Current loss: 26.91
+Exploring step 96/100. Current loss: 45.83
+Exploring step 97/100. Current loss: 55.85
+Exploring step 98/100. Current loss: 72.85
+Exploring step 99/100. Current loss: 75.98
+Exploring finished.
+Setting the best result: 50, 19, 1, 9,  lowest error: 0.00
+0 is even. dv = 1.00
+1 is odd. dv = -1.61
+2 is even. dv = 0.68
+3 is odd. dv = -1.88
+4 is even. dv = 1.00
+5 is odd. dv = -1.56
+6 is even. dv = 0.67
+7 is odd. dv = -2.01
+8 is even. dv = 1.00
+9 is odd. dv = -1.69
+10 is even. dv = 0.63
+11 is odd. dv = -2.05
+12 is even. dv = 1.00
+13 is odd. dv = -1.60
+14 is even. dv = 0.62
+15 is odd. dv = -2.17
+Loss: 0.00
+

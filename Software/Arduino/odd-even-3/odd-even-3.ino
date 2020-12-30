@@ -19,14 +19,14 @@
 bool debug = false;
 
 const int BAUD = 9600;
-int pwmPins[4] = {3, 5, 6, 9};
-const int readLEDPins[4] = {2, 4, 7, 8};
+int pwmPins[4] = {3, 9, 10, 11};
+const int readLEDPins[4] = {2, 4, 5, 6};
 const int voltagePin = A0;
 const float minThreshold = 2.6;
 const float maxThreshold = 4.5;
 const float nearly0 = 0.0000001;
 long seconds = 0;
-int pwms[4] = {0, 0, 0, 0}; // About half way for each
+int pwms[4] = {0, 0, 0, 0};
 int previouspwms[4];
 float previousLoss;
 bool inputs[4] = {false, false, false, false};
@@ -36,7 +36,7 @@ float threshold = 4.0;
 float previousThreshold;
 float learningRate = 0.2;
 float thresholdLearningRate = 0.2;
-long settle = 120000;
+long settle = 300;
 long lastTime;
 int bestPWMs[4];
 float bestError = 3.4028235E+38;
@@ -44,18 +44,13 @@ int sample;
 int totalSamples;
 
 
-void SetPWMs(bool light)
+void SetPWMs()
 {
   for(int synapse = 0; synapse < 4; synapse++)
   {
-    if(light)
-    {
-      analogWrite(pwmPins[synapse], pwms[synapse]);
-    } else
-    {
-      digitalWrite(pwmPins[synapse], 0);
-    }
+    analogWrite(pwmPins[synapse], pwms[synapse]);
   }
+  delay(settle);
 }
 
 void SetLEDs(bool light)
@@ -77,11 +72,9 @@ void SetLEDs(bool light)
 
 float ReadValue()
 {
-  SetPWMs(false);
   SetLEDs(true);
   int v = analogRead(voltagePin);
-  SetLEDs(false);
-  SetPWMs(true);  
+  SetLEDs(false); 
   return (float)v*5.0/1024.0;
 }
 
@@ -212,7 +205,7 @@ void Adjust(int pwmAdjustments[], float thresholdAdjustment)
     threshold = minThreshold;
   if(threshold > maxThreshold)
     threshold = maxThreshold;
-  SetPWMs(true);
+  SetPWMs();
 }
 
 // + or - 1
@@ -319,13 +312,6 @@ void StartTeach()
   lastTime = millis(); 
 }
 
-void SettleReminder()
-{
-    Serial.print("Wait for the photochromic synapses to settle. The current settling time is ");
-    Serial.print(settle);
-    Serial.println(" milliseconds.");  
-}
-
 // Explore the space
 
 void Explore()
@@ -349,10 +335,9 @@ void Explore()
       Serial.print(pwms[synapse]);
       Serial.print(", ");
     }
-    SetPWMs(true);
+    SetPWMs();
     Serial.print(" lowest error: ");
     Serial.println(bestError);
-    SettleReminder();
     exploring = false;
     return;
   }
@@ -382,7 +367,7 @@ void Explore()
   {
     pwms[synapse] = random(256);
   }
-  SetPWMs(true);
+  SetPWMs();
 }
 
 void StartExplore(int samples)
@@ -405,7 +390,7 @@ void StartExplore(int samples)
     }
     Serial.println();
   }
-  SetPWMs(true);
+  SetPWMs();
   sample = 0;
   totalSamples = samples;
   exploring = true;
@@ -427,7 +412,11 @@ void Help()
   Serial.println(" r: Run a test.");
   Serial.println(" p: Print the current PWM pattern and threshold.");  
   Serial.println(" P: Set a PWM pattern.");
-  Serial.println(" 0: Reset exploration.");       
+  Serial.println(" f: Set input false/true pattern.");
+  Serial.println(" 0: Reset exploration.");
+  Serial.println(" L: Turn the LEDs on.");
+  Serial.println(" l: Turn the LEDs off.");
+  Serial.println(" v: Read the voltage.");         
 }
 
 void Control()
@@ -489,6 +478,7 @@ void Control()
 
     case '0':
       bestError = 3.4028235E+38;
+      Serial.println("Exploration reset");  
       break;
 
     case 'p':
@@ -504,20 +494,49 @@ void Control()
 
     case 'P':
       Serial.print("PWM pattern (4 numbers in [0, 255]): ");
+      while(Serial.available() <= 0);
       for(int synapse = 0; synapse < 4; synapse++)
       {
-        while(Serial.available() <= 0);
         pwms[synapse] = Serial.parseInt();
         Serial.print(pwms[synapse]);
         if(synapse < 3)
           Serial.print(", ");
       }
       Serial.println();
-      SetPWMs(true);
-      SettleReminder();      
-      break;                 
+      while(Serial.available() > 0) Serial.read();
+      SetPWMs();     
+      break;   
 
-  
+   case 'f':
+      Serial.print("Input pattern (4 0s or 1s): ");
+      while(Serial.available() <= 0);
+      for(int synapse = 0; synapse < 4; synapse++)
+      {
+        inputs[synapse] = Serial.parseInt();
+        Serial.print(inputs[synapse]);
+        if(synapse < 3)
+          Serial.print(", ");
+      }
+      Serial.println();
+      while(Serial.available() > 0) Serial.read();    
+      break;    
+
+    case 'L':
+      for(int synapse = 0; synapse < 4; synapse++)
+        inputs[synapse] = true;  
+      SetLEDs(true);
+      Serial.println("All LEDs on.");
+      break;
+
+    case 'l':  
+      SetLEDs(false);
+      Serial.println("All LEDs off.");
+      break;
+
+    case 'v':  
+      Serial.print("Voltage: ");
+      Serial.println(ReadValue());
+      break;
       
     default:
     case '?':
@@ -537,7 +556,7 @@ void setup()
   }
 
   pinMode(voltagePin, INPUT);
-  SetPWMs(false);
+  SetPWMs();
   SetLEDs(false);
 
   Serial.begin(BAUD);

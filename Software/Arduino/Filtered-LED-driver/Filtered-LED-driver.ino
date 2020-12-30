@@ -12,7 +12,8 @@ const int readStabilisation = 1;
 int led = 0;
 
 void setup() {
-  TCCR2B = TCCR2B & B11111000 | B00000001; // for PWM frequency of 31372.55 Hz
+  TCCR2B = TCCR2B & B11111000 | B00000001; // D3, D11
+  TCCR1B = TCCR1B & B11111000 | B00000001; // D9, 10
   Serial.begin(9600);
   Serial.println("PWM Filter");
   pinMode(pwmPin, OUTPUT);
