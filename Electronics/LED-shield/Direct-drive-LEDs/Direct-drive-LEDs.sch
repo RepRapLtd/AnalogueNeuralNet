@@ -834,8 +834,6 @@ F 3 "~" H 10275 5200 50  0001 C CNN
 $EndComp
 Text GLabel 1750 6775 2    50   Input ~ 0
 photoC
-Text GLabel 1750 7050 2    50   Input ~ 0
-PhotoE
 Wire Wire Line
 	1750 6775 1625 6775
 Wire Wire Line
@@ -967,4 +965,42 @@ Wire Wire Line
 	5450 6525 5450 6325
 Wire Wire Line
 	5550 6525 5550 6325
+$Comp
+L Connector:Conn_01x02_Male J1
+U 1 1 5FF245E8
+P 1950 7050
+F 0 "J1" H 1922 6932 50  0000 R CNN
+F 1 "Conn_01x02_Male" H 1922 7023 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 1950 7050 50  0001 C CNN
+F 3 "~" H 1950 7050 50  0001 C CNN
+	1    1950 7050
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	1750 6950 1625 6950
+Wire Wire Line
+	1625 6950 1625 6775
+Connection ~ 1625 6775
+$Comp
+L Mechanical:MountingHole H2
+U 1 1 5FF32EFD
+P 4550 7375
+F 0 "H2" H 4650 7421 50  0000 L CNN
+F 1 "MountingHole" H 4650 7330 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.1mm" H 4550 7375 50  0001 C CNN
+F 3 "~" H 4550 7375 50  0001 C CNN
+	1    4550 7375
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H1
+U 1 1 5FF38966
+P 4300 7375
+F 0 "H1" H 4400 7421 50  0000 L CNN
+F 1 "MountingHole" H 4400 7330 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.1mm" H 4300 7375 50  0001 C CNN
+F 3 "~" H 4300 7375 50  0001 C CNN
+	1    4300 7375
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

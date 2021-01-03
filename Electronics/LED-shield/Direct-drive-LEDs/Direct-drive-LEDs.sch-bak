@@ -834,8 +834,6 @@ F 3 "~" H 10275 5200 50  0001 C CNN
 $EndComp
 Text GLabel 1750 6775 2    50   Input ~ 0
 photoC
-Text GLabel 1750 7050 2    50   Input ~ 0
-PhotoE
 Wire Wire Line
 	1750 6775 1625 6775
 Wire Wire Line
@@ -868,12 +866,12 @@ Wire Wire Line
 Wire Wire Line
 	900  7325 1100 7325
 $Comp
-L arduino:Arduino_Mega2560_Shield XA?
+L arduino:Arduino_Mega2560_Shield XA1
 U 1 1 5FFCB39A
 P 4500 5025
-F 0 "XA?" V 4447 2697 60  0000 R CNN
+F 0 "XA1" V 4447 2697 60  0000 R CNN
 F 1 "Arduino_Mega2560_Shield" V 4553 2697 60  0000 R CNN
-F 2 "" H 5200 7775 60  0001 C CNN
+F 2 "arduino:Arduino_Mega2560_Shield" H 5200 7775 60  0001 C CNN
 F 3 "https://store.arduino.cc/arduino-mega-2560-rev3" H 5200 7775 60  0001 C CNN
 	1    4500 5025
 	0    1    1    0   
@@ -884,10 +882,10 @@ Wire Wire Line
 	2550 3725 2600 3725
 Connection ~ 2550 3725
 $Comp
-L power:+5V #PWR?
+L power:+5V #PWR0101
 U 1 1 5FFDBD59
 P 2600 3625
-F 0 "#PWR?" H 2600 3475 50  0001 C CNN
+F 0 "#PWR0101" H 2600 3475 50  0001 C CNN
 F 1 "+5V" H 2615 3798 50  0000 C CNN
 F 2 "" H 2600 3625 50  0001 C CNN
 F 3 "" H 2600 3625 50  0001 C CNN
@@ -916,10 +914,10 @@ Connection ~ 1100 7325
 Wire Wire Line
 	1100 7325 1275 7325
 $Comp
-L power:GND #PWR?
+L power:GND #PWR0102
 U 1 1 5FFF80E0
 P 3000 3600
-F 0 "#PWR?" H 3000 3350 50  0001 C CNN
+F 0 "#PWR0102" H 3000 3350 50  0001 C CNN
 F 1 "GND" H 3005 3427 50  0000 C CNN
 F 2 "" H 3000 3600 50  0001 C CNN
 F 3 "" H 3000 3600 50  0001 C CNN
@@ -967,4 +965,42 @@ Wire Wire Line
 	5450 6525 5450 6325
 Wire Wire Line
 	5550 6525 5550 6325
+$Comp
+L Connector:Conn_01x02_Male J1
+U 1 1 5FF245E8
+P 1950 7050
+F 0 "J1" H 1922 6932 50  0000 R CNN
+F 1 "Conn_01x02_Male" H 1922 7023 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 1950 7050 50  0001 C CNN
+F 3 "~" H 1950 7050 50  0001 C CNN
+	1    1950 7050
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	1750 6950 1625 6950
+Wire Wire Line
+	1625 6950 1625 6775
+Connection ~ 1625 6775
+$Comp
+L Mechanical:MountingHole H?
+U 1 1 5FF32EFD
+P 4550 7375
+F 0 "H?" H 4650 7421 50  0000 L CNN
+F 1 "MountingHole" H 4650 7330 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.1mm" H 4550 7375 50  0001 C CNN
+F 3 "~" H 4550 7375 50  0001 C CNN
+	1    4550 7375
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H?
+U 1 1 5FF38966
+P 4300 7375
+F 0 "H?" H 4400 7421 50  0000 L CNN
+F 1 "MountingHole" H 4400 7330 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.1mm" H 4300 7375 50  0001 C CNN
+F 3 "~" H 4300 7375 50  0001 C CNN
+	1    4300 7375
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
