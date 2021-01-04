@@ -734,50 +734,6 @@ F 3 "~" H 1625 6475 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L Amplifier_Operational:OP275 U1
-U 1 1 5FF96DDF
-P 2625 1500
-F 0 "U1" H 2625 1867 50  0000 C CNN
-F 1 "OP275" H 2625 1776 50  0000 C CNN
-F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 2625 1500 50  0001 C CNN
-F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/OP275.pdf" H 2625 1500 50  0001 C CNN
-	1    2625 1500
-	1    0    0    -1  
-$EndComp
-$Comp
-L Amplifier_Operational:OP275 U1
-U 2 1 5FFA949E
-P 6225 1500
-F 0 "U1" H 6225 1867 50  0000 C CNN
-F 1 "OP275" H 6225 1776 50  0000 C CNN
-F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 6225 1500 50  0001 C CNN
-F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/OP275.pdf" H 6225 1500 50  0001 C CNN
-	2    6225 1500
-	1    0    0    -1  
-$EndComp
-$Comp
-L Amplifier_Operational:OP275 U2
-U 1 1 5FFAB683
-P 9550 1600
-F 0 "U2" H 9550 1967 50  0000 C CNN
-F 1 "OP275" H 9550 1876 50  0000 C CNN
-F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 9550 1600 50  0001 C CNN
-F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/OP275.pdf" H 9550 1600 50  0001 C CNN
-	1    9550 1600
-	1    0    0    -1  
-$EndComp
-$Comp
-L Amplifier_Operational:OP275 U2
-U 2 1 5FFADA40
-P 9525 4350
-F 0 "U2" H 9525 4717 50  0000 C CNN
-F 1 "OP275" H 9525 4626 50  0000 C CNN
-F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 9525 4350 50  0001 C CNN
-F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/OP275.pdf" H 9525 4350 50  0001 C CNN
-	2    9525 4350
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:C C6
 U 1 1 5FFBC0A6
 P 900 6775
@@ -929,42 +885,28 @@ Wire Wire Line
 Connection ~ 3000 3725
 Wire Wire Line
 	3000 3725 3050 3725
-Text GLabel 3050 6525 3    50   Input ~ 0
+Text GLabel 6650 6525 3    50   Input ~ 0
 PWMin0
-Text GLabel 3150 6525 3    50   Input ~ 0
+Text GLabel 6550 6525 3    50   Input ~ 0
 PWMin1
-Text GLabel 3250 6525 3    50   Input ~ 0
+Text GLabel 6450 6525 3    50   Input ~ 0
 PWMin2
-Text GLabel 5550 6525 3    50   Input ~ 0
+Text GLabel 6350 6525 3    50   Input ~ 0
 PWMin3
 Text GLabel 5450 6525 3    50   Input ~ 0
 LEDon0
-Text GLabel 5350 6525 3    50   Input ~ 0
-LEDon1
 Text GLabel 5250 6525 3    50   Input ~ 0
+LEDon1
+Text GLabel 5050 6525 3    50   Input ~ 0
 LEDon2
-Text GLabel 5150 6525 3    50   Input ~ 0
+Text GLabel 4850 6525 3    50   Input ~ 0
 LEDon3
 Text GLabel 5350 3625 1    50   Input ~ 0
 photoC
 Wire Wire Line
 	5350 3725 5350 3625
 Wire Wire Line
-	3050 6525 3050 6325
-Wire Wire Line
-	3150 6525 3150 6325
-Wire Wire Line
-	3250 6525 3250 6325
-Wire Wire Line
-	5150 6525 5150 6325
-Wire Wire Line
-	5250 6525 5250 6325
-Wire Wire Line
-	5350 6525 5350 6325
-Wire Wire Line
 	5450 6525 5450 6325
-Wire Wire Line
-	5550 6525 5550 6325
 $Comp
 L Connector:Conn_01x02_Male J1
 U 1 1 5FF245E8
@@ -987,7 +929,7 @@ U 1 1 5FF32EFD
 P 4550 7375
 F 0 "H2" H 4650 7421 50  0000 L CNN
 F 1 "MountingHole" H 4650 7330 50  0000 L CNN
-F 2 "MountingHole:MountingHole_2.1mm" H 4550 7375 50  0001 C CNN
+F 2 "MountingHole:MountingHole_4.3mm_M4" H 4550 7375 50  0001 C CNN
 F 3 "~" H 4550 7375 50  0001 C CNN
 	1    4550 7375
 	1    0    0    -1  
@@ -998,9 +940,133 @@ U 1 1 5FF38966
 P 4300 7375
 F 0 "H1" H 4400 7421 50  0000 L CNN
 F 1 "MountingHole" H 4400 7330 50  0000 L CNN
-F 2 "MountingHole:MountingHole_2.1mm" H 4300 7375 50  0001 C CNN
+F 2 "MountingHole:MountingHole_4.3mm_M4" H 4300 7375 50  0001 C CNN
 F 3 "~" H 4300 7375 50  0001 C CNN
 	1    4300 7375
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6650 6525 6650 6325
+Wire Wire Line
+	6550 6525 6550 6325
+Wire Wire Line
+	5250 6525 5250 6325
+Wire Wire Line
+	5050 6325 5050 6525
+Wire Wire Line
+	4850 6525 4850 6325
+Wire Wire Line
+	6450 6525 6450 6325
+Wire Wire Line
+	6350 6325 6350 6525
+$Comp
+L Amplifier_Operational:LM2904 U1
+U 1 1 600B93BA
+P 2625 1500
+F 0 "U1" H 2625 1867 50  0000 C CNN
+F 1 "TLC2722" H 2625 1776 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 2625 1500 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm358.pdf" H 2625 1500 50  0001 C CNN
+	1    2625 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L Amplifier_Operational:LM2904 U1
+U 2 1 600D1945
+P 6225 1500
+F 0 "U1" H 6225 1867 50  0000 C CNN
+F 1 "TLC2722" H 6225 1776 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 6225 1500 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm358.pdf" H 6225 1500 50  0001 C CNN
+	2    6225 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L Amplifier_Operational:LM2904 U1
+U 3 1 600D5316
+P 1275 2200
+F 0 "U1" H 1233 2246 50  0000 L CNN
+F 1 "TLC2722" H 1233 2155 50  0000 L CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 1275 2200 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm358.pdf" H 1275 2200 50  0001 C CNN
+	3    1275 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Amplifier_Operational:LM2904 U2
+U 1 1 600DA883
+P 9550 1600
+F 0 "U2" H 9550 1967 50  0000 C CNN
+F 1 "TLC2722" H 9550 1876 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 9550 1600 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm358.pdf" H 9550 1600 50  0001 C CNN
+	1    9550 1600
+	1    0    0    -1  
+$EndComp
+$Comp
+L Amplifier_Operational:LM2904 U2
+U 2 1 600DD659
+P 9525 4350
+F 0 "U2" H 9525 4717 50  0000 C CNN
+F 1 "TLC2722" H 9525 4626 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 9525 4350 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm358.pdf" H 9525 4350 50  0001 C CNN
+	2    9525 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Amplifier_Operational:LM2904 U2
+U 3 1 600DFE65
+P 8250 2225
+F 0 "U2" H 8208 2271 50  0000 L CNN
+F 1 "TLC2722" H 8208 2180 50  0000 L CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 8250 2225 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/lm358.pdf" H 8250 2225 50  0001 C CNN
+	3    8250 2225
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0103
+U 1 1 600EF611
+P 1175 1900
+F 0 "#PWR0103" H 1175 1750 50  0001 C CNN
+F 1 "+5V" H 1190 2073 50  0000 C CNN
+F 2 "" H 1175 1900 50  0001 C CNN
+F 3 "" H 1175 1900 50  0001 C CNN
+	1    1175 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0104
+U 1 1 600F06EC
+P 1175 2500
+F 0 "#PWR0104" H 1175 2250 50  0001 C CNN
+F 1 "GND" H 1180 2327 50  0000 C CNN
+F 2 "" H 1175 2500 50  0001 C CNN
+F 3 "" H 1175 2500 50  0001 C CNN
+	1    1175 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 600F153A
+P 8150 2525
+F 0 "#PWR0105" H 8150 2275 50  0001 C CNN
+F 1 "GND" H 8155 2352 50  0000 C CNN
+F 2 "" H 8150 2525 50  0001 C CNN
+F 3 "" H 8150 2525 50  0001 C CNN
+	1    8150 2525
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0106
+U 1 1 600F249E
+P 8150 1925
+F 0 "#PWR0106" H 8150 1775 50  0001 C CNN
+F 1 "+5V" H 8165 2098 50  0000 C CNN
+F 2 "" H 8150 1925 50  0001 C CNN
+F 3 "" H 8150 1925 50  0001 C CNN
+	1    8150 1925
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC
