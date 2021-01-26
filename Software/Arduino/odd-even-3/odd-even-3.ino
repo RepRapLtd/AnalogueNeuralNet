@@ -16,25 +16,28 @@
  * 
  */
 
-#define synapseCount 4 
+#define synapseCount 8
+#define inputCount (synapseCount/2)
+#define inputPatterns (1 << inputCount) 
 
 bool debug = false;
 
 const int BAUD = 9600;
-int pwmPins[synapseCount] = {10, 11, 12, 13};
-const int readLEDPins[synapseCount] = {46, 48, 50, 52};
-const int voltagePin = A0;
+int pwmPins[synapseCount] = {13, 11, 12, 10, 7, 6, 5, 4};
+const int readLEDPins[synapseCount] = {46, 48, 50, 52, 38, 40, 42, 44};
+const int voltagePin0 = A0;
+const int voltagePin1 = A1;
 const float minThreshold = 2.6;
 const float maxThreshold = 4.5;
 const float nearly0 = 0.0000001;
 long seconds = 0;
-int pwms[synapseCount] = {0, 0, 0, 0};
+int pwms[synapseCount] = {0, 0, 0, 0, 0, 0, 0, 0};
 int previouspwms[synapseCount];
 float previousLoss;
-bool inputs[synapseCount] = {false, false, false, false};
+bool inputs[inputCount] = {false, false, false, false};
 bool teaching = false;
 bool exploring = false;
-float threshold = 4.0;
+float threshold = 0.0;
 float previousThreshold;
 float learningRate = 0.2;
 float thresholdLearningRate = 0.2;
@@ -44,6 +47,7 @@ int bestPWMs[synapseCount];
 float bestError = 3.4028235E+38;
 int sample;
 int totalSamples;
+float lastv0, lastv1;
 
 
 // Fast PWM frequency of 31.37255 KHz...
@@ -83,7 +87,7 @@ void SetLEDs(bool light)
   {
     if(light)
     {
-      if(inputs[synapse])
+      if(inputs[synapse%inputCount])
        digitalWrite(readLEDPins[synapse], 1);
       else
        digitalWrite(readLEDPins[synapse], 0);
@@ -97,54 +101,84 @@ void SetLEDs(bool light)
 float ReadValue()
 {
   SetLEDs(true);
-  int v = analogRead(voltagePin);
-  SetLEDs(false); 
-  return (float)v*5.0/1024.0;
+  int v0 = analogRead(voltagePin0);
+  int v1 = analogRead(voltagePin1);
+  SetLEDs(false);
+  lastv0 = (float)v0*5.0/1024.0;
+  lastv1 = (float)v1*5.0/1024.0;
+  return lastv0 - lastv1;
 }
 
-// Set an input pattern: 0 - 15
+// Set an input pattern
 
 void SetNumber(int n)
 {
-  for(int synapse = 0; synapse < synapseCount; synapse++)
+  for(int input = 0; input < inputCount; input++)
   {
-     inputs[synapse] = (n >> synapse) & 1;
+     inputs[input] = (n >> input) & 1;
   }
 }
 
 // Compute the mean of the sum of squared errors
+// Optionally print the patterns and voltages
 
-float LossFunction()
+float LossFunction(bool output)
 {
   float wrong = 0.0;
   bool error;
-  for(int n = 0; n < 16; n++)
+  
+  for(int n = 0; n < inputPatterns; n++)
   {
     SetNumber(n);
+    if(output) Serial.print(n);
     float v = ReadValue();
     error = false;
+    float dv = threshold - v;
+    
     if(n & 1)
     {
-      if(v > threshold)
+      if(dv < 0.0)
         error = true;
     } else
     {
        if(v < threshold)
         error = true;     
     }
-    float d = threshold - v;
+    
+
     if(error)
     {
-      wrong += d*d;
-    } 
+      wrong += dv*dv;
+    }
+    
+    if(output)
+    {
+      if(dv > 0.0)
+        Serial.print(" is odd.");
+      else
+        Serial.print(" is even.");
+      Serial.print(" v0 = ");
+      Serial.print(lastv0);
+      Serial.print(", v1 = ");
+      Serial.print(lastv1);
+      Serial.print(", dv = ");      
+      Serial.println(dv); 
+    }
   }
-
+  
+  if(output)
+  {
+    Serial.print("Loss: ");
+    Serial.println(wrong);
+  }
+  
   return wrong;
 }
 
+/*
 void PrintAll()
 {
-  for(int n = 0; n < 16; n++)
+  for(int n = 0; n < inputPatterns; n++)
   {
     SetNumber(n);
     Serial.print(n);
@@ -158,7 +192,7 @@ void PrintAll()
   Serial.print("Loss: ");
   Serial.println(LossFunction());
 }
-
+*/
 
 
 // Allow the user to see if it works.
@@ -179,9 +213,9 @@ void TestNumber()
     return;
   }
 
-  if(n > 16)
+  if(n > inputPatterns)
   {
-    PrintAll();
+    LossFunction(true);
     return;
   }
   
@@ -252,14 +286,14 @@ void Teach()
   if(!teaching)
     return;
     
-  long t = millis();
-  if(t - lastTime < settle)
-    return;
-  lastTime = t;
+//  long t = millis();
+//  if(t - lastTime < settle)
+//    return;
+//  lastTime = t;
   
   int pwmAdjustments[synapseCount];
   
-  float loss = LossFunction();
+  float loss = LossFunction(false);
       
   float derivative;
   float deltaLoss = loss - previousLoss;
@@ -319,7 +353,7 @@ void Teach()
 
 void StartTeach()
 {
-  previousLoss = LossFunction();
+  previousLoss = LossFunction(false);
 
   // Small purturbations to get initial derivatives.
 
@@ -343,10 +377,10 @@ void Explore()
   if(!exploring)
     return;
     
-  long t = millis();
-  if(t - lastTime < settle)
-    return;
-  lastTime = t;
+//  long t = millis();
+//  if(t - lastTime < settle)
+//    return;
+//  lastTime = t;
 
   sample++;
 
@@ -366,7 +400,7 @@ void Explore()
     return;
   }
 
-  float loss = LossFunction();
+  float loss = LossFunction(false);
   Serial.print("Exploring step ");
   Serial.print(sample);
   Serial.print('/');
@@ -380,9 +414,15 @@ void Explore()
     for(int synapse = 0; synapse < synapseCount; synapse++)
     {
       Serial.print(pwms[synapse]);
-      if(synapse < 3)
+      if(synapse < synapseCount-1)
         Serial.print(", ");
       bestPWMs[synapse] = pwms[synapse];
+    }
+    if(loss == 0.0)
+    {
+      exploring = false;
+      Serial.println("\nExploring stopped at zero loss.");
+      return;
     }
   }
   Serial.println();
@@ -409,7 +449,7 @@ void StartExplore(int samples)
     {
       pwms[synapse] = random(256);
       Serial.print(pwms[synapse]);
-      if(synapse < 3)
+      if(synapse < synapseCount-1)
           Serial.print(", ");
     }
     Serial.println();
@@ -430,7 +470,7 @@ void Help()
   Serial.println(" e: Turn off exploring the weights space at random.");  
   Serial.println(" T: Turn teaching on.");
   Serial.println(" t: Turn teaching off.");
-  Serial.println(" s: Setrandom seed.");
+  Serial.println(" s: Set random seed.");
   Serial.println(" h: Set threshold.");
   Serial.println(" m: Set settling time.");      
   Serial.println(" r: Run a test.");
@@ -475,7 +515,7 @@ void Control()
       break;
 
     case 'r':
-      PrintAll();
+      LossFunction(true);
       break;
 
     case 's':
@@ -523,7 +563,7 @@ void Control()
       {
         pwms[synapse] = Serial.parseInt();
         Serial.print(pwms[synapse]);
-        if(synapse < 3)
+        if(synapse < synapseCount-1)
           Serial.print(", ");
       }
       Serial.println();
@@ -532,13 +572,15 @@ void Control()
       break;   
 
    case 'f':
-      Serial.print("Input pattern (synapseCount 0s or 1s): ");
+      Serial.print("Input pattern (");
+      Serial.print(inputCount);
+      Serial.print(" 0s or 1s): ");
       while(Serial.available() <= 0);
-      for(int synapse = 0; synapse < synapseCount; synapse++)
+      for(int input = 0; input < inputCount; input++)
       {
-        inputs[synapse] = Serial.parseInt();
-        Serial.print(inputs[synapse]);
-        if(synapse < 3)
+        inputs[input] = Serial.parseInt();
+        Serial.print(inputs[input]);
+        if(input < inputCount-1)
           Serial.print(", ");
       }
       Serial.println();
@@ -547,8 +589,8 @@ void Control()
       break;    
 
     case 'L':
-      for(int synapse = 0; synapse < synapseCount; synapse++)
-        inputs[synapse] = true;  
+      for(int input = 0; input < inputCount; input++)
+        inputs[input] = true;  
       SetLEDs(true);
       Serial.println("All LEDs on.");
       break;
@@ -560,7 +602,14 @@ void Control()
 
     case 'v':  
       Serial.print("Voltage: ");
-      Serial.println(ReadValue());
+      Serial.print(ReadValue());
+      Serial.print(" (v0 = ");
+      Serial.print(lastv0);
+      Serial.print(", v1 = ");
+      Serial.print(lastv1);
+      Serial.print(", threshold = ");
+      Serial.print(threshold);
+      Serial.println(")");
       break;
       
     default:
@@ -580,12 +629,14 @@ void setup()
     pinMode(readLEDPins[synapse], OUTPUT);  
   }
 
-  pinMode(voltagePin, INPUT);
+  pinMode(voltagePin0, INPUT);
+  pinMode(voltagePin1, INPUT);  
+  
   SetPWMs();
   SetLEDs(false);
 
   Serial.begin(BAUD);
-  Serial.println("RepRap Ltd Optical Half-Neuron Starting\n");
+  Serial.println("RepRap Ltd Optical Neuron Starting\n");
 
   // Having a timeout on serial input is very silly and annoying.
   
