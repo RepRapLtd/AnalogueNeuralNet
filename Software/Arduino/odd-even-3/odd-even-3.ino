@@ -5,7 +5,7 @@
  * 
  * https://reprapltd.com
  * 
- * Device: Arduino Uno
+ * Device: Arduino Mega
  * 
  * Adrian Bowyer
  * 26 Novem 2020
@@ -16,20 +16,22 @@
  * 
  */
 
+#define synapseCount 4 
+
 bool debug = false;
 
 const int BAUD = 9600;
-int pwmPins[4] = {3, 9, 10, 11};
-const int readLEDPins[4] = {2, 4, 5, 6};
+int pwmPins[synapseCount] = {10, 11, 12, 13};
+const int readLEDPins[synapseCount] = {46, 48, 50, 52};
 const int voltagePin = A0;
 const float minThreshold = 2.6;
 const float maxThreshold = 4.5;
 const float nearly0 = 0.0000001;
 long seconds = 0;
-int pwms[4] = {0, 0, 0, 0};
-int previouspwms[4];
+int pwms[synapseCount] = {0, 0, 0, 0};
+int previouspwms[synapseCount];
 float previousLoss;
-bool inputs[4] = {false, false, false, false};
+bool inputs[synapseCount] = {false, false, false, false};
 bool teaching = false;
 bool exploring = false;
 float threshold = 4.0;
@@ -38,15 +40,37 @@ float learningRate = 0.2;
 float thresholdLearningRate = 0.2;
 long settle = 300;
 long lastTime;
-int bestPWMs[4];
+int bestPWMs[synapseCount];
 float bestError = 3.4028235E+38;
 int sample;
 int totalSamples;
 
 
+// Fast PWM frequency of 31.37255 KHz...
+
+void FastPWM()
+{
+  /*
+  // Uno
+  
+  TCCR2B = TCCR2B & B11111000 | B00000001; // D3, D11
+  TCCR1B = TCCR1B & B11111000 | B00000001; // D9, D10
+  
+  */
+
+  // MEGA
+
+  TCCR0B = TCCR0B & B11111000 | B00000001; // D4 D13 (60 KHz)
+  TCCR1B = TCCR1B & B11111000 | B00000001; // D11 D12
+  TCCR2B = TCCR2B & B11111000 | B00000001; // D9 D10
+  TCCR4B = TCCR4B & B11111000 | B00000001; // D2 D3 D5
+  TCCR4B = TCCR4B & B11111000 | B00000001; // D6 D7 D8
+  TCCR5B = TCCR5B & B11111000 | B00000001; // D44 D45 D46
+}
+
 void SetPWMs()
 {
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     analogWrite(pwmPins[synapse], pwms[synapse]);
   }
@@ -55,7 +79,7 @@ void SetPWMs()
 
 void SetLEDs(bool light)
 {
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     if(light)
     {
@@ -82,7 +106,7 @@ float ReadValue()
 
 void SetNumber(int n)
 {
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
      inputs[synapse] = (n >> synapse) & 1;
   }
@@ -178,7 +202,7 @@ void Report(float loss)
   Serial.print("Loss: ");
   Serial.print(loss, 4);
   Serial.print(", PWMs: ");
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     Serial.print(pwms[synapse]);
     Serial.print(", "); 
@@ -190,7 +214,7 @@ void Report(float loss)
 
 void Adjust(int pwmAdjustments[], float thresholdAdjustment)
 {
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
       previouspwms[synapse] = pwms[synapse];
       pwms[synapse] += pwmAdjustments[synapse];
@@ -217,7 +241,7 @@ int RandomPM1()
 
 void RandomPWMs()
 {
-    for(int synapse = 0; synapse < 4; synapse++)
+    for(int synapse = 0; synapse < synapseCount; synapse++)
     {
       pwms[synapse] = random(70);
     }  
@@ -233,7 +257,7 @@ void Teach()
     return;
   lastTime = t;
   
-  int pwmAdjustments[4];
+  int pwmAdjustments[synapseCount];
   
   float loss = LossFunction();
       
@@ -246,7 +270,7 @@ void Teach()
     Serial.print(", delta PWM|derivative: ");
   }
 
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     int deltaPWM = pwms[synapse] - previouspwms[synapse];
     if(debug)
@@ -299,7 +323,7 @@ void StartTeach()
 
   // Small purturbations to get initial derivatives.
 
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     previouspwms[synapse] = pwms[synapse];
     pwms[synapse] += RandomPM1();
@@ -329,7 +353,7 @@ void Explore()
   if(sample >= totalSamples)
   {
     Serial.print("Exploring finished.\nSetting the best result: ");
-    for(int synapse = 0; synapse < 4; synapse++)
+    for(int synapse = 0; synapse < synapseCount; synapse++)
     {
       pwms[synapse] = bestPWMs[synapse];
       Serial.print(pwms[synapse]);
@@ -353,7 +377,7 @@ void Explore()
   {
     Serial.print(" is an improvement. PWMs: ");
     bestError = loss;
-    for(int synapse = 0; synapse < 4; synapse++)
+    for(int synapse = 0; synapse < synapseCount; synapse++)
     {
       Serial.print(pwms[synapse]);
       if(synapse < 3)
@@ -363,7 +387,7 @@ void Explore()
   }
   Serial.println();
   
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     pwms[synapse] = random(256);
   }
@@ -381,7 +405,7 @@ void StartExplore(int samples)
   if(resp == 'n')
   {
     Serial.print("Setting new random pattern: ");
-    for(int synapse = 0; synapse < 4; synapse++)
+    for(int synapse = 0; synapse < synapseCount; synapse++)
     {
       pwms[synapse] = random(256);
       Serial.print(pwms[synapse]);
@@ -483,7 +507,7 @@ void Control()
 
     case 'p':
       Serial.print("PWM pattern: ");
-      for(int synapse = 0; synapse < 4; synapse++)
+      for(int synapse = 0; synapse < synapseCount; synapse++)
       {
         Serial.print(pwms[synapse]);
         Serial.print(", ");
@@ -493,9 +517,9 @@ void Control()
       break;   
 
     case 'P':
-      Serial.print("PWM pattern (4 numbers in [0, 255]): ");
+      Serial.print("PWM pattern (synapseCount numbers in [0, 255]): ");
       while(Serial.available() <= 0);
-      for(int synapse = 0; synapse < 4; synapse++)
+      for(int synapse = 0; synapse < synapseCount; synapse++)
       {
         pwms[synapse] = Serial.parseInt();
         Serial.print(pwms[synapse]);
@@ -508,9 +532,9 @@ void Control()
       break;   
 
    case 'f':
-      Serial.print("Input pattern (4 0s or 1s): ");
+      Serial.print("Input pattern (synapseCount 0s or 1s): ");
       while(Serial.available() <= 0);
-      for(int synapse = 0; synapse < 4; synapse++)
+      for(int synapse = 0; synapse < synapseCount; synapse++)
       {
         inputs[synapse] = Serial.parseInt();
         Serial.print(inputs[synapse]);
@@ -518,11 +542,12 @@ void Control()
           Serial.print(", ");
       }
       Serial.println();
+      SetLEDs(true);
       while(Serial.available() > 0) Serial.read();    
       break;    
 
     case 'L':
-      for(int synapse = 0; synapse < 4; synapse++)
+      for(int synapse = 0; synapse < synapseCount; synapse++)
         inputs[synapse] = true;  
       SetLEDs(true);
       Serial.println("All LEDs on.");
@@ -549,7 +574,7 @@ void Control()
 
 void setup() 
 {
-  for(int synapse = 0; synapse < 4; synapse++)
+  for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     pinMode(pwmPins[synapse], OUTPUT);
     pinMode(readLEDPins[synapse], OUTPUT);  
@@ -568,10 +593,7 @@ void setup()
 
   Help();
 
-  // Fast PWM
-  
-  TCCR2B = TCCR2B & B11111000 | B00000001; // D3, D11
-  TCCR1B = TCCR1B & B11111000 | B00000001; // D9, D10
+  FastPWM();
 
   lastTime = millis();
 }

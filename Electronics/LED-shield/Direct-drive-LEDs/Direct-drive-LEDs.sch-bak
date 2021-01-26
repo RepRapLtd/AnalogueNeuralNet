@@ -767,20 +767,20 @@ F 3 "" H 3000 3600 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	3000 3600 3000 3725
-Text GLabel 5250 6525 3    50   Input ~ 0
+Text GLabel 3050 6525 3    50   Input ~ 0
 LEDon0
-Text GLabel 5050 6525 3    50   Input ~ 0
+Text GLabel 2850 6525 3    50   Input ~ 0
 LEDon1
-Text GLabel 4850 6525 3    50   Input ~ 0
+Text GLabel 2650 6525 3    50   Input ~ 0
 LEDon2
-Text GLabel 4650 6525 3    50   Input ~ 0
+Text GLabel 2450 6525 3    50   Input ~ 0
 LEDon3
 Text GLabel 5350 3625 1    50   Input ~ 0
 photoC
 Wire Wire Line
 	5350 3725 5350 3625
 Wire Wire Line
-	5250 6525 5250 6325
+	3050 6525 3050 6325
 $Comp
 L Connector:Conn_01x02_Male J1
 U 1 1 5FF245E8
@@ -798,11 +798,11 @@ Wire Wire Line
 	1625 6950 1625 6775
 Connection ~ 1625 6775
 Wire Wire Line
-	5050 6525 5050 6325
+	2850 6525 2850 6325
 Wire Wire Line
-	4850 6325 4850 6525
+	2650 6325 2650 6525
 Wire Wire Line
-	4650 6525 4650 6325
+	2450 6525 2450 6325
 $Comp
 L Amplifier_Operational:LM2904 U1
 U 1 1 600B93BA

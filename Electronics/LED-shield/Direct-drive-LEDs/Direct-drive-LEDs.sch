@@ -1033,4 +1033,18 @@ Wire Wire Line
 Connection ~ 8550 4250
 Connection ~ 2200 1400
 Connection ~ 9100 4250
+Wire Wire Line
+	2950 3725 3000 3725
+Connection ~ 2950 3725
+Connection ~ 3000 3725
+Wire Wire Line
+	3050 3725 3150 3725
+Connection ~ 3050 3725
+Wire Wire Line
+	3150 3725 3250 3725
+Connection ~ 3150 3725
+Wire Wire Line
+	2600 3725 2550 3725
+Connection ~ 2600 3725
+Connection ~ 2550 3725
 $EndSCHEMATC
