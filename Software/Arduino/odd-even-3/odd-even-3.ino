@@ -48,6 +48,7 @@ float bestError = 3.4028235E+38;
 int sample;
 int totalSamples;
 float lastv0, lastv1;
+bool sawtooth = false;
 
 
 // Fast PWM frequency of 31.37255 KHz...
@@ -135,13 +136,13 @@ float LossFunction(bool output)
     error = false;
     float dv = threshold - v;
     
-    if(n & 1)
+    if(n == 8)
     {
       if(dv < 0.0)
         error = true;
     } else
     {
-       if(v < threshold)
+       if(dv > 0)
         error = true;     
     }
     
@@ -154,9 +155,9 @@ float LossFunction(bool output)
     if(output)
     {
       if(dv > 0.0)
-        Serial.print(" is odd.");
+        Serial.print(" is 8.");
       else
-        Serial.print(" is even.");
+        Serial.print(" is ! 8.");
       Serial.print(" v0 = ");
       Serial.print(lastv0);
       Serial.print(", v1 = ");
@@ -436,14 +437,14 @@ void Explore()
 
 void StartExplore(int samples)
 {
-  Serial.println("Start with the current pattern (y/n)? ");
+/*  Serial.println("Start with the current pattern (y/n)? ");
   while(Serial.available() <= 0);
   int resp = Serial.read();
   Serial.println(resp);  
   while(Serial.available()) Serial.read();
   
   if(resp == 'n')
-  {
+  {*/
     Serial.print("Setting new random pattern: ");
     for(int synapse = 0; synapse < synapseCount; synapse++)
     {
@@ -453,13 +454,65 @@ void StartExplore(int samples)
           Serial.print(", ");
     }
     Serial.println();
-  }
+ // }
   SetPWMs();
   sample = 0;
   totalSamples = samples;
   exploring = true;
   teaching = false;
   lastTime = millis(); 
+}
+
+void Calibrate()
+{
+  Serial.println("\nCalibration: ");
+  for(int pwm = 0; pwm < 256; pwm += 8)
+  {
+    for(int synapse = 0; synapse < synapseCount; synapse++)
+    {
+      pwms[synapse] = pwm;
+    }
+    SetPWMs();
+    Serial.print(pwm);
+    Serial.print(' ');
+    for(int input = 0; input < inputCount; input++)
+    {
+      for(int i = 0; i < inputCount; i++)
+      {
+        inputs[i] = 0;
+      }
+      inputs[input] = 1;
+      float v = ReadValue();
+      Serial.print(lastv0);
+      Serial.print(' ');
+      Serial.print(lastv1);
+      Serial.print(' ');
+    }
+    Serial.println();
+  }
+  Serial.println();
+}
+
+void Saw()
+{
+  if(!sawtooth)
+    return;
+    
+  for(int input = 0; input < inputCount; input++)
+  {
+        inputs[input] = 1;
+  }
+  
+  SetLEDs(true);
+  
+  for(int pwm = 0; pwm < 256; pwm += 8)
+  {
+    for(int synapse = 0; synapse < synapseCount; synapse++)
+    {
+      pwms[synapse] = pwm;
+    }
+    SetPWMs();
+  }
 }
 
 void Help()
@@ -472,7 +525,8 @@ void Help()
   Serial.println(" t: Turn teaching off.");
   Serial.println(" s: Set random seed.");
   Serial.println(" h: Set threshold.");
-  Serial.println(" m: Set settling time.");      
+  Serial.println(" m: Set settling time.");
+  Serial.println(" c: Calibrate.");        
   Serial.println(" r: Run a test.");
   Serial.println(" p: Print the current PWM pattern and threshold.");  
   Serial.println(" P: Set a PWM pattern.");
@@ -480,7 +534,9 @@ void Help()
   Serial.println(" 0: Reset exploration.");
   Serial.println(" L: Turn the LEDs on.");
   Serial.println(" l: Turn the LEDs off.");
-  Serial.println(" v: Read the voltage.");         
+  Serial.println(" v: Read the voltage.");
+  Serial.println(" /: Continuous sawtooth.");
+  Serial.println(" -: Sawtooth off.");           
 }
 
 void Control()
@@ -524,7 +580,11 @@ void Control()
       n = Serial.parseInt();
       randomSeed(n);
       Serial.println(n);      
-      break; 
+      break;
+
+    case 'c':
+      Calibrate();
+      break;
 
     case 'm':
       Serial.print("Settling time (ms): ");
@@ -534,7 +594,7 @@ void Control()
       break;   
 
     case 'h':
-      Serial.print("Threshold in [0.0, 5.0]: ");
+      Serial.print("Threshold in [-5.0, 5.0]: ");
       while(Serial.available() <= 0);
       threshold = Serial.parseFloat();
       Serial.println(threshold);  
@@ -600,6 +660,16 @@ void Control()
       Serial.println("All LEDs off.");
       break;
 
+    case '/':
+      Serial.println("Sawtooth on");  
+      sawtooth = true;
+      break;
+
+    case '-':
+      Serial.println("Sawtooth off");  
+      sawtooth = false;
+      break;
+
     case 'v':  
       Serial.print("Voltage: ");
       Serial.print(ReadValue());
@@ -655,6 +725,7 @@ void loop()
 {
   Teach();
   Explore();
+  Saw();
   Control();
   Serial.flush();
 }
