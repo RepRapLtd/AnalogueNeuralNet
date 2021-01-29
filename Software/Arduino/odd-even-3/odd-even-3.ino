@@ -33,6 +33,7 @@ const float nearly0 = 0.0000001;
 long seconds = 0;
 int pwms[synapseCount] = {0, 0, 0, 0, 0, 0, 0, 0};
 int previouspwms[synapseCount];
+int pwmGradients[synapseCount] = {0, 0, 0, 0, 0, 0, 0, 0};
 float previousLoss;
 bool inputs[inputCount] = {false, false, false, false};
 bool teaching = false;
@@ -136,28 +137,27 @@ float LossFunction(bool output)
     error = false;
     float dv = threshold - v;
     
-    if(n == 8)
+    if(n <= 7)
     {
       if(dv < 0.0)
         error = true;
     } else
     {
-       if(dv > 0)
+       if(dv > 0.0)
         error = true;     
     }
     
-
     if(error)
     {
-      wrong += dv*dv;
+      wrong += 1; //dv*dv;
     }
     
     if(output)
     {
-      if(dv > 0.0)
-        Serial.print(" is 8.");
+      if(dv >= 0.0)
+        Serial.print(" is <= 7.");
       else
-        Serial.print(" is ! 8.");
+        Serial.print(" is > 7.");
       Serial.print(" v0 = ");
       Serial.print(lastv0);
       Serial.print(", v1 = ");
@@ -197,7 +197,7 @@ void PrintAll()
 
 
 // Allow the user to see if it works.
-
+/*
 void TestNumber()
 {
 
@@ -231,6 +231,7 @@ void TestNumber()
 
   while(Serial.available()) Serial.read();
 }
+*/
 
 void Report(float loss)
 {
@@ -371,6 +372,27 @@ void StartTeach()
   lastTime = millis(); 
 }
 
+void ReportPWMsAndSetBest()
+{
+    for(int synapse = 0; synapse < synapseCount; synapse++)
+    {
+      pwms[synapse] = bestPWMs[synapse];
+      Serial.print(pwms[synapse]);
+      Serial.print(", ");
+    }
+    SetPWMs();
+    Serial.print(" lowest error: ");
+    Serial.println(bestError);
+    Serial.print("Gradients: ");
+    for(int synapse = 0; synapse < synapseCount; synapse++)
+    {
+      Serial.print(pwmGradients[synapse]);
+      if(synapse < synapseCount - 1)
+        Serial.print(", ");
+    }
+    Serial.println();  
+}
+
 // Explore the space
 
 void Explore()
@@ -388,15 +410,7 @@ void Explore()
   if(sample >= totalSamples)
   {
     Serial.print("Exploring finished.\nSetting the best result: ");
-    for(int synapse = 0; synapse < synapseCount; synapse++)
-    {
-      pwms[synapse] = bestPWMs[synapse];
-      Serial.print(pwms[synapse]);
-      Serial.print(", ");
-    }
-    SetPWMs();
-    Serial.print(" lowest error: ");
-    Serial.println(bestError);
+    ReportPWMsAndSetBest();
     exploring = false;
     return;
   }
@@ -417,12 +431,15 @@ void Explore()
       Serial.print(pwms[synapse]);
       if(synapse < synapseCount-1)
         Serial.print(", ");
+      pwmGradients[synapse] = pwms[synapse] - bestPWMs[synapse];
       bestPWMs[synapse] = pwms[synapse];
     }
+    Serial.println();
     if(loss == 0.0)
     {
+      Serial.print("\nExploring stopped at zero loss. PWMs: ");
+      ReportPWMsAndSetBest();
       exploring = false;
-      Serial.println("\nExploring stopped at zero loss.");
       return;
     }
   }
