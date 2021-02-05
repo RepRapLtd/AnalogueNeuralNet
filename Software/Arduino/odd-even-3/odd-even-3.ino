@@ -45,6 +45,7 @@ float thresholdLearningRate = 0.2;
 long settle = 300;
 long lastTime;
 int bestPWMs[synapseCount];
+int nextBestPWMs[synapseCount];
 float bestError = 3.4028235E+38;
 int sample;
 int totalSamples;
@@ -393,6 +394,53 @@ void ReportPWMsAndSetBest()
     Serial.println();  
 }
 
+void GeneticAlgorithm(int generations)
+{
+    for(int synapse = 0; synapse < synapseCount; synapse++)
+    {
+      pwms[synapse] = bestPWMs[synapse];
+    }
+    SetPWMs();
+    float bestLoss = LossFunction(false);
+
+    for(int g = 0; g < generations; g++)
+    { 
+      for(int synapse = 0; synapse < synapseCount; synapse++)
+      {
+        if(random(512) & 1)
+        {
+          pwms[synapse] = bestPWMs[synapse] + RandomPM1();
+        } else
+        {
+          pwms[synapse] = nextBestPWMs[synapse] + RandomPM1();
+        }
+      }
+      SetPWMs();
+      float loss = LossFunction(false);
+      if(loss < bestLoss)
+      {
+        Serial.print("Genetic improvement. Loss = ");
+        Serial.print(loss);
+        Serial.print(", PWMs: ");
+        for(int synapse = 0; synapse < synapseCount; synapse++)
+        {
+           nextBestPWMs[synapse] = bestPWMs[synapse];
+           bestPWMs[synapse] = pwms[synapse];
+           Serial.print(pwms[synapse]);
+           if(synapse < synapseCount - 1)
+            Serial.print(", ");
+        }
+        Serial.println();
+        if(loss <= 0.0)
+        {
+          Serial.println("Zero loss. Stopping GA.");
+          return;
+        }
+        bestLoss = loss;
+      }
+    }
+}
+
 // Explore the space
 
 void Explore()
@@ -432,6 +480,7 @@ void Explore()
       if(synapse < synapseCount-1)
         Serial.print(", ");
       pwmGradients[synapse] = pwms[synapse] - bestPWMs[synapse];
+      nextBestPWMs[synapse] = bestPWMs[synapse];
       bestPWMs[synapse] = pwms[synapse];
     }
     Serial.println();
@@ -537,7 +586,8 @@ void Help()
   Serial.println("Commands: ");
   Serial.println(" ?: Print this list.");
   Serial.println(" E: Turn on exploring the weights space at random.");
-  Serial.println(" e: Turn off exploring the weights space at random.");  
+  Serial.println(" e: Turn off exploring the weights space at random.");
+  Serial.println(" g: Run a genetic algorithm on the best and next best PWM settings.");  
   Serial.println(" T: Turn teaching on.");
   Serial.println(" t: Turn teaching off.");
   Serial.println(" s: Set random seed.");
@@ -576,6 +626,14 @@ void Control()
       n = Serial.parseInt();
       StartExplore(n);
       Serial.println(n);  
+      break;
+
+    case 'g':
+      Serial.print("Number of generations: ");
+      while(Serial.available() <= 0);
+      n = Serial.parseInt();
+      Serial.println(n);      
+      GeneticAlgorithm(n);
       break;
 
     case 't':
@@ -713,7 +771,9 @@ void setup()
   for(int synapse = 0; synapse < synapseCount; synapse++)
   {
     pinMode(pwmPins[synapse], OUTPUT);
-    pinMode(readLEDPins[synapse], OUTPUT);  
+    pinMode(readLEDPins[synapse], OUTPUT);
+    bestPWMs[synapse] = 0;
+    nextBestPWMs[synapse] = 0;  
   }
 
   pinMode(voltagePin0, INPUT);
