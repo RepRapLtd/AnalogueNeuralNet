@@ -14,41 +14,6 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L adafruit-new:ARDUINOUNO M1
-U 1 1 5FABDAAC
-P 3500 3125
-F 0 "M1" H 3500 3125 45  0001 C CNN
-F 1 "ARDUINOUNO" H 3500 3125 45  0001 C CNN
-F 2 "adafruit-new_ARDUINO" H 3530 3275 20  0001 C CNN
-F 3 "" H 3500 3125 50  0001 C CNN
-	1    3500 3125
-	0    1    1    0   
-$EndComp
-Text GLabel 1975 3425 0    50   Input ~ 0
-5V
-Text GLabel 1975 3525 0    50   Input ~ 0
-GND
-Text GLabel 1975 3625 0    50   Input ~ 0
-GND
-Text GLabel 4725 2825 2    50   Input ~ 0
-GND
-Text GLabel 2000 4325 0    50   Input ~ 0
-SDA
-Text GLabel 2000 4425 0    50   Input ~ 0
-SCL
-Wire Wire Line
-	1975 3425 2200 3425
-Wire Wire Line
-	2200 3525 1975 3525
-Wire Wire Line
-	1975 3625 2200 3625
-Wire Wire Line
-	2200 4325 2000 4325
-Wire Wire Line
-	2000 4425 2200 4425
-Wire Wire Line
-	4725 2825 4600 2825
-$Comp
 L reprapltd-kicad:PCA9622 U1
 U 1 1 5FAC2BCD
 P 7525 3125
@@ -87,21 +52,17 @@ Wire Wire Line
 	7025 2325 6950 2325
 Wire Wire Line
 	7025 2425 6975 2425
-Text GLabel 4725 4125 2    50   Input ~ 0
-OE-
 Text GLabel 6925 2525 0    50   Input ~ 0
 OE-
 Wire Wire Line
 	7025 2525 6925 2525
-Wire Wire Line
-	4725 4125 4600 4125
 $Comp
 L Jumper:SolderJumper_3_Open JP2
 U 1 1 5FAC8308
 P 6350 2325
 F 0 "JP2" V 6396 2392 50  0000 L CNN
 F 1 "SolderJumper_3_Open" V 6305 2392 50  0000 L CNN
-F 2 "" H 6350 2325 50  0001 C CNN
+F 2 "Jumper:SolderJumper-3_P1.3mm_Open_Pad1.0x1.5mm" H 6350 2325 50  0001 C CNN
 F 3 "~" H 6350 2325 50  0001 C CNN
 	1    6350 2325
 	0    -1   -1   0   
@@ -112,7 +73,7 @@ U 1 1 5FACCE7F
 P 6350 3050
 F 0 "JP3" V 6396 3117 50  0000 L CNN
 F 1 "SolderJumper_3_Open" V 6305 3117 50  0000 L CNN
-F 2 "" H 6350 3050 50  0001 C CNN
+F 2 "Jumper:SolderJumper-3_P1.3mm_Open_Pad1.0x1.5mm" H 6350 3050 50  0001 C CNN
 F 3 "~" H 6350 3050 50  0001 C CNN
 	1    6350 3050
 	0    -1   -1   0   
@@ -123,7 +84,7 @@ U 1 1 5FACD530
 P 6325 3975
 F 0 "JP1" V 6371 4042 50  0000 L CNN
 F 1 "SolderJumper_3_Open" V 6280 4042 50  0000 L CNN
-F 2 "" H 6325 3975 50  0001 C CNN
+F 2 "Jumper:SolderJumper-3_P1.3mm_Open_Pad1.0x1.5mm" H 6325 3975 50  0001 C CNN
 F 3 "~" H 6325 3975 50  0001 C CNN
 	1    6325 3975
 	0    -1   -1   0   
@@ -259,7 +220,7 @@ U 1 1 5FAF12B7
 P 8600 1550
 F 0 "JP4" V 8804 1500 45  0000 C CNN
 F 1 "PINHD-1X12" V 8720 1500 45  0000 C CNN
-F 2 "adafruit-new_1X12" H 8630 1700 20  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x12_P2.54mm_Vertical" H 8630 1700 20  0001 C CNN
 F 3 "" H 8600 1550 50  0001 C CNN
 	1    8600 1550
 	0    -1   -1   0   
@@ -476,7 +437,7 @@ U 1 1 5FB7AC5D
 P 9725 3725
 F 0 "JP5" V 9929 3675 45  0000 C CNN
 F 1 "PINHD-1X12" V 9845 3675 45  0000 C CNN
-F 2 "adafruit-new_1X12" H 9755 3875 20  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x12_P2.54mm_Vertical" H 9755 3875 20  0001 C CNN
 F 3 "" H 9725 3725 50  0001 C CNN
 	1    9725 3725
 	1    0    0    -1  
@@ -757,10 +718,6 @@ Wire Wire Line
 	10225 4525 9600 4525
 Text GLabel 10225 4825 3    50   Input ~ 0
 GND
-Text GLabel 1975 3925 0    50   Input ~ 0
-A0
-Wire Wire Line
-	2200 3925 1975 3925
 Text GLabel 9425 1400 1    50   Input ~ 0
 A0
 Wire Wire Line
@@ -770,4 +727,35 @@ Wire Wire Line
 Connection ~ 8950 1450
 Wire Wire Line
 	8950 1450 8950 1400
+$Comp
+L arduino:Arduino_Uno_Shield XA1
+U 1 1 605A7BB6
+P 3575 3250
+F 0 "XA1" H 3575 4637 60  0000 C CNN
+F 1 "Arduino_Uno_Shield" H 3575 4531 60  0000 C CNN
+F 2 "arduino:Arduino_Uno_Shield" H 5375 7000 60  0001 C CNN
+F 3 "https://store.arduino.cc/arduino-uno-rev3" H 5375 7000 60  0001 C CNN
+	1    3575 3250
+	1    0    0    -1  
+$EndComp
+Text GLabel 4875 2200 2    50   Input ~ 0
+OE-
+Text GLabel 2275 3800 0    50   Input ~ 0
+GND
+Text GLabel 2275 3900 0    50   Input ~ 0
+GND
+Text GLabel 2275 4000 0    50   Input ~ 0
+GND
+Text GLabel 2275 2500 0    50   Input ~ 0
+SCL
+Text GLabel 2275 2600 0    50   Input ~ 0
+SDA
+Text GLabel 2275 3400 0    50   Input ~ 0
+A0
+Text GLabel 2275 4200 0    50   Input ~ 0
+5V
+Text GLabel 2275 3000 0    50   Input ~ 0
+SDA
+Text GLabel 2275 2900 0    50   Input ~ 0
+SCL
 $EndSCHEMATC
