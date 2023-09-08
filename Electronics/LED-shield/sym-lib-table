@@ -1,3 +1,4 @@
 (sym_lib_table
-  (lib (name LED-shield-rescue)(type Legacy)(uri ${KIPRJMOD}/LED-shield-rescue.lib)(options "")(descr ""))
+  (version 7)
+  (lib (name "LED-shield-rescue")(type "KiCad")(uri "${KIPRJMOD}/LED-shield-rescue.kicad_sym")(options "")(descr ""))
 )

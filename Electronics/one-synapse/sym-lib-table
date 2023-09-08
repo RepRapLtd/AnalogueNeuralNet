@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "one-synapse-rescue")(type "KiCad")(uri "${KIPRJMOD}/one-synapse-rescue.kicad_sym")(options "")(descr ""))
+)
