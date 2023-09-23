@@ -326,6 +326,18 @@
     [
       "133ffd0f-a451-425f-8ce0-4540f5afe04a",
       ""
+    ],
+    [
+      "92572af9-49d6-4bff-a2fc-21e7e00559d7",
+      "synapse inputs"
+    ],
+    [
+      "f608d37e-20f6-4e09-b39b-d08e75fe856f",
+      "PWM"
+    ],
+    [
+      "caf4524b-d8d9-45f6-ad30-41c60702812c",
+      "Sum-diff"
     ]
   ],
   "text_variables": {}
