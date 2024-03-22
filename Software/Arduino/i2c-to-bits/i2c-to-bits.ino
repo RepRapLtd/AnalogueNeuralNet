@@ -42,7 +42,7 @@ void receiveEvent(int howMany)
     char c = Wire.read(); // receive byte as a character
     for (int i = 0; i < 4; i++)
     {
-      if(c && 1)
+      if(c & 1)
       {
         digitalWrite(pin0 + i, 1);
         Serial.print("1");
@@ -51,7 +51,7 @@ void receiveEvent(int howMany)
         digitalWrite(pin0 + i, 0);
         Serial.print("0");
       }
-       c = c >> 1;
+      c = c >> 1;
     }
   }
   
