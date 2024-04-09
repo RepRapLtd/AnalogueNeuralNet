@@ -13,7 +13,7 @@ def realToBytes(value):
         msb = (int_value >> 8) & 0xFF
         return lsb, msb
     else:
-        raise ValueError("realToBytes - Value must be between 0.0 and 1.0.")
+        raise ValueError("realToBytes() - Value must be between 0.0 and 1.0.")
 
 class i2cControl:
 
@@ -30,8 +30,6 @@ class i2cControl:
     self.inhibit = [7, 6, 5, 4]
     self.voltages = [0,0,0,0,0,0,0,0]
     self.bits = [0,0,0,0]
-    if debug:
-        self.i2c.scan()
     bs = [0x70,0,0] # reset
     self.setAtoD(bs)
     bs=[0x80,0,1] # internal ref voltage
@@ -46,7 +44,7 @@ class i2cControl:
         self.setAtoD(bs)
         self.voltages[channel] = voltage*vMult
     else:
-        raise ValueError("AtoD.set() - channel must be be between 0 and 7.")
+        raise ValueError("setVoltage() - channel must be be between 0 and 7.")
 
   def setInhibition(self, i):
       for k in range(4):
@@ -68,6 +66,8 @@ class i2cControl:
         b = b >> 1
 
   def printState(self):
+      print("I2C scan:")
+      self.i2c.scan()
       print("Input bits: ", end='')
       for i in range(4):
           print(str(self.bits[i]) + ", ", end='')
@@ -92,7 +92,7 @@ class i2cControl:
 
 
 ic = i2cControl()
-ic.setInputBits(0x0)
+ic.setInputBits(0xf)
 #ic.setInhibition([1.0,1.0,1.0,1.0])
 #ic.setExitation([1.0,1.0,1.0,1.0])
 ic.setInhibition([0.5,0.5,0.5,0.5])
