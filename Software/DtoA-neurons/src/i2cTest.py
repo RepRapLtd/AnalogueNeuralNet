@@ -92,11 +92,11 @@ class i2cControl:
 
 
 ic = i2cControl()
-ic.setInputBits(0xf)
-#ic.setInhibition([1.0,1.0,1.0,1.0])
-#ic.setExitation([1.0,1.0,1.0,1.0])
-ic.setInhibition([0.5,0.5,0.5,0.5])
-ic.setExitation([0.5,0.5,0.5,0.5])
+ic.setInputBits(0x8)
+ic.setInhibition([1.0,1.0,1.0,1.0])
+ic.setExitation([1.0,1.0,1.0,1.0])
+#ic.setInhibition([0.5,0.5,0.5,0.5])
+#ic.setExitation([0.5,0.5,0.5,0.5])
 ic.printState()
 #for i in range(8):
 #   ic.setVoltage(i, 1.0)
