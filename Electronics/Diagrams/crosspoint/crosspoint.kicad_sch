@@ -1,0 +1,48 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid 9024e212-450c-4133-b886-7ed6affd8f11)
+
+  (paper "A4")
+
+  (lib_symbols
+  )
+
+
+  (sheet (at 38.735 55.88) (size 12.7 12.065) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid 88e7fd7d-39be-4978-b172-eaf8c428f191)
+    (property "Sheetname" "Synapse to axon connections" (at 38.735 55.1684 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "synapse-axon-conn.kicad_sch" (at 38.735 68.5296 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "crosspoint"
+        (path "/9024e212-450c-4133-b886-7ed6affd8f11" (page "3"))
+      )
+    )
+  )
+
+  (sheet (at 38.1 35.56) (size 12.7 11.43) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid 9542555e-7d47-4c13-a237-f181474b2f65)
+    (property "Sheetname" "Axon to synapse connections" (at 38.1 34.8484 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "axon-synapse-conn.kicad_sch" (at 38.1 47.5746 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "crosspoint"
+        (path "/9024e212-450c-4133-b886-7ed6affd8f11" (page "2"))
+      )
+    )
+  )
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)
