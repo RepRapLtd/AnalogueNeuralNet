@@ -14,6 +14,7 @@
 
 int pin0 = 2;
 int i2cAddress = 4;
+int volts = A0;
 
 void setup()
 {
@@ -23,7 +24,7 @@ void setup()
   {
     pinMode(pin0 + i, OUTPUT);
   }
-  Serial.begin(9600);           // start serial for output
+  Serial.begin(115200);           // start serial for output
   Serial.print("\nI2C to pins");
 }
 
@@ -36,24 +37,34 @@ void loop()
 // this function is registered as an event, see setup()
 void receiveEvent(int howMany)
 {
-  Serial.print("\nPins set to: ");
+  char c; // receive byte as a character
+  bool print;
   while(Wire.available() > 0) // loop through all (should only be one)
   {
-    char c = Wire.read(); // receive byte as a character
-    for (int i = 0; i < 4; i++)
+    c = Wire.read(); // receive byte as a character
+    print = c & 0x10;
+    if (c & 0x20)
     {
-      if(c & 1)
+      float v = (float)analogRead(volts)*5.0/1024.0;
+      Serial.println(v, 4);
+    } else
+    {
+      if (print) Serial.print("\nPins set to: ");
+      for (int i = 0; i < 4; i++)
       {
-        digitalWrite(pin0 + i, 1);
-        Serial.print("1");
-      } else
-      {
-        digitalWrite(pin0 + i, 0);
-        Serial.print("0");
+        if(c & 1)
+        {
+          digitalWrite(pin0 + i, 1);
+          if (print) Serial.print("1");
+        } else
+        {
+          digitalWrite(pin0 + i, 0);
+          if (print) Serial.print("0");
+        }
+        c = c >> 1;
       }
-      c = c >> 1;
     }
   }
   
-  Serial.println();         
+  if (print) Serial.println();         
 }

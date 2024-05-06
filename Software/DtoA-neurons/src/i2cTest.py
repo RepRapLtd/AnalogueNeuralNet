@@ -26,8 +26,8 @@ class i2cControl:
     self.i2c = i2cdriver.I2CDriver("/dev/ttyUSB0")
     self.atod = 0x57
     self.dip = 0x4
-    self.excite = [3, 2, 1, 0]
-    self.inhibit = [7, 6, 5, 4]
+    self.excite = [0, 2, 4, 6]
+    self.inhibit = [1, 3, 5, 7]
     self.voltages = [0,0,0,0,0,0,0,0]
     self.bits = [0,0,0,0]
     bs = [0x70,0,0] # reset
@@ -54,7 +54,9 @@ class i2cControl:
       for k in range(4):
           self.setVoltage(self.excite[k], e[k])
 
-  def setInputBits(self, b):
+  def setInputBits(self, b, print):
+    if print:
+        b = b | 0x10;
     self.i2c.start(self.dip, 0)
     self.i2c.write([b])
     self.i2c.stop()
@@ -64,6 +66,11 @@ class i2cControl:
         else:
             self.bits[i] = 0
         b = b >> 1
+
+  def printVoltage(self):
+    self.i2c.start(self.dip, 0)
+    self.i2c.write([0x20])
+    self.i2c.stop()
 
   def printState(self):
       print("I2C scan:")
@@ -92,13 +99,17 @@ class i2cControl:
 
 
 ic = i2cControl()
-ic.setInputBits(0x8)
-ic.setInhibition([1.0,1.0,1.0,1.0])
-ic.setExitation([1.0,1.0,1.0,1.0])
-#ic.setInhibition([0.5,0.5,0.5,0.5])
-#ic.setExitation([0.5,0.5,0.5,0.5])
-ic.printState()
-#for i in range(8):
-#   ic.setVoltage(i, 1.0)
+
+#ic.setInhibition([1.0,1.0,1.0,1.0])
+#ic.setExitation([1.0,1.0,1.0,1.0])
+#ic.setInhibition([1.0,1.0,1.0,1.0])
+#ic.setExitation([1.0,1.0,1.0,1.0])
+#ic.printState()
+#ic.printVoltage()
+ic.setInputBits(0xf, True)
+for i in range(11):
+   v = 0#i*0.1;
+   ic.setExitation([v,v,v,v])
+   ic.printVoltage()
 
 
