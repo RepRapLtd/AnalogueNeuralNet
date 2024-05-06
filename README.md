@@ -1,4 +1,4 @@
-# AnalogueNeuralNet
+# Modular Neuromorphic Analogue Neural Net
 
 ![Synapse Test](https://github.com/RepRapLtd/AnalogueNeuralNet/blob/main/Pix/synapse-breadboard.jpg)
 
