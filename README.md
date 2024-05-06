@@ -8,4 +8,4 @@ The basic idea is to use crosspoint analoge switches to make all the interconnec
 
 So. How will it work?
 
-<img src="https://github.com/RepRapLtd/AnalogueNeuralNet/blob/main/Electronics/Diagrams/crosspoint/crosspoint-Axon%20to%20synapse%20connections.svg" alt="Axons to synapses" width="2000"/>
+![Axons to synapses](https://github.com/RepRapLtd/AnalogueNeuralNet/blob/main/Electronics/Diagrams/crosspoint/crosspoint-Axon%20to%20synapse%20connections.svg)
