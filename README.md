@@ -32,7 +32,7 @@ So now there are a collection of outputs, O. These have to be connected to the i
 
 The switch matrix works in exactly the same way as before (though there are different numbers of rows and columns), but this time it is switching digital signals. Once again only one switch on a row may be closed, but any number in a column may be closed. So any output, O, can be routed to any number of inputs, I, but each input can only be driven by one output.
 
-There are also GROUND and Vdd columns that allow any input to be set permanently to 0 or 1.
+There are also GROUND and Vdd columns that allow any input to be set permanently to 0 or 1. I may add a third such column carrying Johnson–Nyquist noise so that such noise can be injected into the machine in a controlled way at any point.
 
 If you look at the two diagrams above, you can see that they align, in the sense that they are two flat circuits that could be put one on top of the other then connected along their left and bottom edges.
 
