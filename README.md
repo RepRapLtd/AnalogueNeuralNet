@@ -40,7 +40,7 @@ Rather conveniently, the AD5629R D to A converter has eight analogue outputs, an
 
 This means that the whole machine can be made Lego like from just three modular PCB designs that can be combined with connectors for the edges to build a machine of any size. Of course there will be limits set by things such as input impeedances, propagation delays and so on. Those will have to be calculated and experimentally investigated.
 
-The whole machine will be programmed via I2C setting the voltages, V, and deciding which switches to close. Note that this will be done once before the machine is used, and does not have to be altered while it is operating. Thus that step doesn't have to be particularly fast.
+The whole machine will be programmed via I2C setting the voltages, V, and deciding which switches to close. Note that this will be done once before the machine is used, and does not have to be altered while it is operating. Thus that step doesn't have to be particularly fast. The voltages, and possibly the interconnections, will have to be altered when the machine is learning, though.
 
 
 
