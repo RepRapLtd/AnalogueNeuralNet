@@ -319,6 +319,10 @@
     [
       "88e7fd7d-39be-4978-b172-eaf8c428f191",
       "Synapse to axon connections"
+    ],
+    [
+      "cc09f57c-9710-4319-9379-c34394b5f9ec",
+      "One neuron"
     ]
   ],
   "text_variables": {}

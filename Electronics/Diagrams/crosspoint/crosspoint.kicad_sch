@@ -42,6 +42,23 @@
     )
   )
 
+  (sheet (at 39.37 83.82) (size 12.7 11.43) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid cc09f57c-9710-4319-9379-c34394b5f9ec)
+    (property "Sheetname" "One neuron" (at 39.37 83.1084 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "one-neuron.kicad_sch" (at 39.37 95.8346 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "crosspoint"
+        (path "/9024e212-450c-4133-b886-7ed6affd8f11" (page "4"))
+      )
+    )
+  )
+
   (sheet_instances
     (path "/" (page "1"))
   )
