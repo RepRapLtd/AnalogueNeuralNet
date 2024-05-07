@@ -18,7 +18,7 @@ The photograph above shows a test breadboard of this design using the chips list
 
 So far, so (I hope) so straightforward. It's an analogue version of the way that a conventional artificial neural network operates, but it's a lot closer to the biological original than linearising the thing in a program for a Turing-equivalent machine.
 
-But I obviously don't want to hard-wire the connections. I want the input data to be routed to any I input; I want the resulting weights/voltages to be routable in any combination to be summed; and I want any output, O, to be able to feed into any group of inputs, I in the next layer (or to form a bit of the final result). To do this I will use 8x8 crosspoint analogue switches (ADG2188).
+But I obviously don't want to hard-wire the connections. I want the input data to be routed to any I input; I want the resulting weights/voltages to be routable in any combination to be summed; and I want any output, O, to be able to feed into any group of inputs, I in the next layer (or to form a bit of the final result). To do this I will use crosspoint analogue switches (ADG2188).
 
 First, here is how the voltages will be connected to the summing amplifiers:
 
@@ -30,7 +30,18 @@ So now there are a collection of outputs, O. These have to be connected to the i
 
 ![Axon to synapse connections](https://github.com/RepRapLtd/AnalogueNeuralNet/blob/main/Electronics/Diagrams/crosspoint/crosspoint-Axon%20to%20synapse%20connections.png)
 
-The switch matrix works in exactly the same way as before (though there are different numbers of rows and columns).
+The switch matrix works in exactly the same way as before (though there are different numbers of rows and columns). Once again only one switch on a row may be closed, but any number in a column may be closed. So any output, O, can be routed to any number of inputs, I, but each input can only be driven by one thing.
+
+There are also GROUND and Vdd columns that allow any input to be set permanently to 0 or 1.
+
+If you look at the two diagrams above, you can see that they align, in the sense that they are two flat circuits that could be put one on top of the other then connected along their edges.
+
+Rather conveniently, the AD5629R D to A converter has eight analogue outputs, and the ADG2188 crosspoint switch is an 8x8 matrix. This will allow the whole system to be made modular - the synapses down the left in the first matrix diagram can be grouped in eights; the MCP6004 summing amplifiers along the bottom have 4 per chip and so can also easily be grouped in eights; and the matrix can be made up from 8x8 elements.
+
+This means that the whole machine can be made Lego like from just three modular PCB designs that can be combined with connectors for the edges to build a machine of any size. Of course there will be limits set by things such as input impeedances, propagation delays and so on. Those will have to be calculated and experimentally investigated.
+
+The whole machine will be programmed via I2C setting the voltages, V, and deciding which switches to close. Note that this will be done once before the machine is used, and does not have to be altered while it is operating. Thus that step doesn't have to be particularly fast.
+
 
 
 Adrian Bowyer
