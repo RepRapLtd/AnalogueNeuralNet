@@ -48,7 +48,7 @@ But how to address all those address-select pins? Well. The computer can only ta
 
 What will the proposed machine be able to do? Well, as I mentioned I don't yet know how big it can be made by adding more modules, though I'll be very surprised if it can do a trillion-parameter LLM. It might make a component of one though.
 
-It is, provably, functionally complete because it can implement a NAND gate. (Functional completeness means that it can do anything that a computer can do.) To see this imagine that Vdd is used to switch 0.5V to the positive sum of one of the summing amps. Two of the I inputs then each switch 0.3V to the negative sum. Only when both inputs are 1 will the output be 0 - that is, it's a NAND gate.
+It is, provably, functionally complete because it can implement a NAND gate. (Functional completeness means that it can do anything that a computer can do.) To see this imagine that Vdd is used to switch 0.5V to the positive sum of one of the summing amps. Two of the I inputs then each switch 0.3V to the negative sum. Only when both inputs are 1 will the output be 0 - that is, that tiny bit of the machine becomes a NAND gate the output of which can be connected to any other.
 
 If it all works it will make a fully asynchronous (it has no clock in operation) modular neuromorphic analogue neural net. The entire design will be open-source, of course. And, if it works well, we may offer kits of the three basic modules plus edge connectors so that people can experiment.
 
