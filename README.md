@@ -4,7 +4,7 @@
 
 This is a project to create a neuromorphic analoge neural network. I wanted to get away from using conventional computers (including parallel graphics processors) to do neural simulations and to make something that is a lot more like a real brain.
 
-What I propose is similar to the <a href = "https://en.wikipedia.org/wiki/Perceptron" target="_blank">early work on perceptrons</a> by Rosenblatt from the 1950s that has now been all but abandoned because today it's much easier to solve a problem by writing some software to do it than by designing and building some electronics to do it. Easier maybe, but at least today we have the advantage of 21st Century electronics.
+What I propose is similar to the [early work on perceptrons](https://en.wikipedia.org/wiki/Perceptron){:target="_blank" rel="noopener"} by Rosenblatt from the 1950s that has now been all but abandoned because today it's much easier to solve a problem by writing some software to do it than by designing and building some electronics to do it. Easier maybe, but at least today we have the advantage of 21st Century electronics.
 
 So. How will it work? (Chip numbers in brackets are suggestions, and may not form part of the final design.)
 
