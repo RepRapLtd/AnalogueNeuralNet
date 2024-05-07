@@ -14,6 +14,6 @@ This is the central idea for a single artificial neuron.There are a number of di
 
 The neuron has fired when O = 1, and not when O = 0.
 
-The photograph above shows a test breadboard of this design using the chips listed. The D to A converter and the Arduino are both controlled by the <a href="https://i2cdriver.com/">I2C driver</a> in the middle, which allows the whole thing to be run via USB from a Python program running on a PC. The Arduino is supplying the inputs, I, and is reading and reporting the output voltage from the summing op. amp.
+The photograph above shows a test breadboard of this design using the chips listed. The D to A converter and the Arduino are both controlled by the <a href="https://i2cdriver.com/" target="_blank">I2C driver</a> in the middle, which allows the whole thing to be run via USB from a Python program running on a PC. The Arduino is supplying the inputs, I, and is reading and reporting the output voltage from the summing op. amp.
 
 
