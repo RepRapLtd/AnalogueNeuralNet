@@ -2,9 +2,9 @@
 
 ![Synapse Test](https://github.com/RepRapLtd/AnalogueNeuralNet/blob/main/Pix/synapse-breadboard.jpg)
 
-This is a project to create a neuromorphic analoge neural network. It will be modular, and so can be used to make networks of any size (within limits yet to be explored).
+This is a project to create a neuromorphic analoge neural network. I wanted to get away from using conventional computers (including parallel graphics processors) to do neural simulations and to make something that is a lot more like a real brain.
 
-The basic idea is to use crosspoint analoge switches to make all the interconnections in a way that is completely programmable.
+What I propose is similar to the <a href = "https://en.wikipedia.org/wiki/Perceptron" target="_blank">early work on perceptrons</a> by Rosenblatt from the 1950s that has now been all but abandoned because today it's much easier to solve a problem by writing some software to do it than by designing and building some electronics to do it. Easier maybe, but at least today we have the advantage of 21st Century electronics.
 
 So. How will it work? (Chip numbers in brackets are suggestions, and may not form part of the final design.)
 
@@ -30,7 +30,7 @@ So now there are a collection of outputs, O. These have to be connected to the i
 
 ![Axon to synapse connections](https://github.com/RepRapLtd/AnalogueNeuralNet/blob/main/Electronics/Diagrams/crosspoint/crosspoint-Axon%20to%20synapse%20connections.png)
 
-The switch matrix works in exactly the same way as before (though there are different numbers of rows and columns). Once again only one switch on a row may be closed, but any number in a column may be closed. So any output, O, can be routed to any number of inputs, I, but each input can only be driven by one thing.
+The switch matrix works in exactly the same way as before (though there are different numbers of rows and columns), but this time it is switching digital signals. Once again only one switch on a row may be closed, but any number in a column may be closed. So any output, O, can be routed to any number of inputs, I, but each input can only be driven by one output.
 
 There are also GROUND and Vdd columns that allow any input to be set permanently to 0 or 1.
 
@@ -42,9 +42,19 @@ This means that the whole machine can be made Lego like from just three modular 
 
 The whole machine will be programmed via I2C setting the voltages, V, and deciding which switches to close. Note that this will be done once before the machine is used, and does not have to be altered while it is operating. Thus that step doesn't have to be particularly fast. The voltages, and possibly the interconnections, will have to be altered when the machine is learning, though.
 
+This means that there will be multiple identical I2C devices on the same bus, all with the same addresses. But they all have two addresses that you flip between with a 1 or a 0 on a given pin. So you can use that pin as a chip select - keep it normally 0, and just set it to 1 when you want to talk to the device on its 1-address.
+
+But how to address all those address-select pins? Well. The computer can only talk to one device at a time - there is no parallelism, and - as I pointed out above - for setting up the machine speed is not a big issue. So I propose that each I2C device will have a single D-type flip-flop (74LVC1G175GW) with its Q output connected to its address-select pin. These will be chained to make a long shift register. The controlling computer can reset them all to 0 with a common CLR line then clock a single 1 into the first one to address the I2C on that device. The next clock pulse will allow the next device to be addressed, and so on.
+
+What will the proposed machine be able to do? Well, as I mentioned I don't yet know how big it can be made by adding more modules, though I'll be very surprised if it can do a trillion-parameter LLM. It might make a component of one though.
+
+It is, provably, functionally complete because it can implement a NAND gate. (Functional completeness means that it can do anything that a computer can do.) To see this imagine that Vdd is used to switch 0.5V to the positive sum of one of the summing amps. Two of the I inputs then each switch 0.3V to the negative sum. Only when both are 1 will the output be 0 - that is, that's a NAND gate.
+
+If it all works it will make a fully asynchronous (it has no clock in operation) modular neuromorphic analogue neural net. The entire design will be open-source, of course. And, if it works well, we may offer kits of the three basic modules plus edge connectors so that people can experiment.
 
 
 Adrian Bowyer
+
 7 May 2024
 
 
