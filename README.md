@@ -4,7 +4,7 @@
 
 This is a project to create a neuromorphic analoge neural network. I wanted to get away from using conventional computers (including parallel graphics processors) to do neural simulations and to make something that is a lot more like a real brain.
 
-What I propose is similar to the [early work on perceptrons](https://en.wikipedia.org/wiki/Perceptron){:target="_blank" rel="noopener"} by Rosenblatt from the 1950s that has now been all but abandoned because today it's much easier to solve a problem by writing some software to do it than by designing and building some electronics to do it. Easier maybe, but at least today we have the advantage of 21st Century electronics.
+What I propose is similar to the [early work on perceptrons](https://en.wikipedia.org/wiki/Perceptron) by Rosenblatt from the 1950s that has now been all but abandoned because today it's much easier to solve a problem by writing some software to do it than by designing and building some electronics to do it. Easier maybe, but at least today we have the advantage of 21st Century electronics.
 
 So. How will it work? (Chip numbers in brackets are suggestions, and may not form part of the final design.)
 
@@ -14,7 +14,7 @@ This is the central idea for a single artificial neuron.There are a number of di
 
 The neuron has fired when O = 1, and not when O = 0.
 
-The photograph above shows a test breadboard of this design using the chips listed. The D to A converter and the Arduino are both controlled by the <a href="https://i2cdriver.com/" target="_blank">I2C driver</a> in the middle, which allows the whole thing to be run via a single USB from a Python program running on a PC. The Arduino is supplying the inputs, I, and is reading and reporting the output voltage from the summing op. amp.
+The photograph above shows a test breadboard of this design using the chips listed. The D to A converter and the Arduino are both controlled by the [I2C driver](https://i2cdriver.com/) in the middle, which allows the whole thing to be run via a single USB from a Python program running on a PC. The Arduino is supplying the inputs, I, and is reading and reporting the output voltage from the summing op. amp.
 
 So far, so (I hope) so straightforward. It's an analogue version of the way that a conventional artificial neural network operates, but it's a lot closer to the biological original than linearising the thing in a program for a Turing-equivalent machine.
 
