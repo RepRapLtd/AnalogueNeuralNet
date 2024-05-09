@@ -59,6 +59,23 @@
     )
   )
 
+  (sheet (at 39.37 108.585) (size 12.7 11.43) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid da147943-228e-458a-9e62-7a7dc2f73e69)
+    (property "Sheetname" "Scratchpad" (at 39.37 107.8734 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "scratchpad.kicad_sch" (at 39.37 120.5996 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "crosspoint"
+        (path "/9024e212-450c-4133-b886-7ed6affd8f11" (page "5"))
+      )
+    )
+  )
+
   (sheet_instances
     (path "/" (page "1"))
   )
