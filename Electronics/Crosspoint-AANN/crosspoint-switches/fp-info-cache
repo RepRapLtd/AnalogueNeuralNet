@@ -1,4 +1,4 @@
-23049237983172904
+23050953229893373
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -94408,6 +94408,13 @@ HELTECWiFiKit32
 0
 36
 36
+reprapltd-kicad
+QFN50P500X500X100-33N
+
+
+0
+33
+33
 reprapltd-kicad
 SOIC-36_11mmx16mmx3.6mm
 SOIC, 28 Pin (https://www.akm.com/akm/en/file/datasheet/AK5394AVS.pdf#page=23), generated with kicad-footprint-generator ipc_gullwing_generator.py
