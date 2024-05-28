@@ -1,5 +1,13 @@
 import numpy as np
 
+import numpy as np
+
+# Global debug variable
+debug = 0
+
+# Set the random seed for reproducibility
+np.random.seed(42)
+
 class Synapse:
     def __init__(self, neuron, is_excitatory=True):
         self.weight = np.random.rand()  # Initialize with a random weight
@@ -18,11 +26,13 @@ class Synapse:
         else:
             self.neuron.receive_inhibition(self.weight)
 
-    def toggle_type(self):
-        self.is_excitatory = not self.is_excitatory
+    def set_type(self, is_excitatory):
+        self.is_excitatory = is_excitatory
 
 class Neuron:
-    def __init__(self):
+    def __init__(self, layer_index, neuron_index):
+        self.layer_index = layer_index
+        self.neuron_index = neuron_index
         self.synapses = []
         self.excitations = 0.0
         self.inhibitions = 0.0
@@ -61,8 +71,8 @@ class Network:
 
     def create_network(self):
         # Create neurons layer by layer
-        for layer_size in self.layers:
-            layer = [Neuron() for _ in range(layer_size)]
+        for layer_index, layer_size in enumerate(self.layers):
+            layer = [Neuron(layer_index, neuron_index) for neuron_index in range(layer_size)]
             self.neurons.append(layer)
 
         # Create synapses between consecutive layers
@@ -87,7 +97,7 @@ class Network:
             for neuron in layer:
                 neuron.check_fire()
 
-    def propagate(self, input_array):
+    def propagate(self, input_array, epoch=None):
         if len(input_array) != len(self.neurons[0]):
             raise ValueError("Input array length must match the number of input neurons.")
 
@@ -108,7 +118,7 @@ class Network:
 
         return output_states
 
-    def backpropagate(self, desired_output):
+    def backpropagate(self, desired_output, epoch=None):
         if len(desired_output) != len(self.neurons[-1]):
             raise ValueError("Desired output length must match the number of output neurons.")
 
@@ -116,27 +126,34 @@ class Network:
         for i, neuron in enumerate(self.neurons[-1]):
             error = (1.0 if desired_output[i] else 0.0) - neuron.output
             neuron.delta = error * self.sigmoid_derivative(neuron.excitations - neuron.inhibitions)
-            print(f"Output neuron {i}: error = {error}, delta = {neuron.delta}")
+            if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
+                print(f"Output neuron {i}: error = {error}, delta = {neuron.delta}")
 
         # Backpropagate the error to hidden layers
         for l in range(len(self.layers) - 2, -1, -1):
             for i, neuron in enumerate(self.neurons[l]):
-                neuron.delta = sum([synapse.weight * synapse.neuron.delta for synapse in neuron.synapses]) * self.sigmoid_derivative(neuron.excitations - neuron.inhibitions)
-                print(f"Hidden neuron layer {l} neuron {i}: delta = {neuron.delta}")
+                neuron.delta = sum(
+                    [(synapse.weight if synapse.is_excitatory else -synapse.weight) * synapse.neuron.delta for synapse in neuron.synapses]
+                ) * self.sigmoid_derivative(neuron.excitations - neuron.inhibitions)
+                if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
+                    layer_type = "Input neuron" if l == 0 else "Hidden neuron"
+                    print(f"{layer_type} layer {l} neuron {i}: delta = {neuron.delta}")
 
-        # Update the weights and potentially toggle the synapse type
+        # Update the weights and potentially set the synapse type
         learning_rate = 0.1
         for l in range(len(self.layers) - 1):
             for neuron in self.neurons[l]:
                 for synapse in neuron.synapses:
                     weight_change = learning_rate * neuron.output * synapse.neuron.delta
                     synapse.weight += weight_change
-                    print(f"Synapse from neuron {neuron} to neuron {synapse.neuron}: weight change = {weight_change}, new weight = {synapse.weight}")
-                    # Toggle the type if necessary
+                    if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
+                        print(f"Synapse from neuron (layer {neuron.layer_index}, index {neuron.neuron_index}) to neuron (layer {synapse.neuron.layer_index}, index {synapse.neuron.neuron_index}): weight change = {weight_change}, new weight = {synapse.weight}")
+                    # Set the type if necessary
                     if synapse.weight < 0:
-                        synapse.toggle_type()
+                        synapse.set_type(False)  # Set to inhibitory
                         synapse.weight = abs(synapse.weight)
-                        print(f"Synapse from neuron {neuron} to neuron {synapse.neuron} toggled to {'excitatory' if synapse.is_excitatory else 'inhibitory'}")
+                    else:
+                        synapse.set_type(True)  # Set to excitatory
 
     def sigmoid_derivative(self, z):
         sigmoid = 1 / (1 + np.exp(-z))
@@ -147,13 +164,14 @@ network = Network([7, 20, 5])
 
 # Input array of booleans
 input_array = [True, False, True, False, False, True, False]
-desired_output = [False, True, True, False, True]
+desired_output = [True, False, True, False, True]
 
 # Train the network over multiple epochs
-for epoch in range(100):
-    output_states = network.propagate(input_array)
-    print(f"Epoch {epoch + 1}: Output states: {output_states}")
-    network.backpropagate(desired_output)
+for epoch in range(200):
+    output_states = network.propagate(input_array, epoch)
+    if debug == 1 or (debug > 1 and epoch % debug == 0):
+        print(f"Epoch {epoch + 1}: Output states: {output_states}")
+    network.backpropagate(desired_output, epoch)
 
 # Final output after training
 final_output = network.propagate(input_array)
