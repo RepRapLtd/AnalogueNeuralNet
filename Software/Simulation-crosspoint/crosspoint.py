@@ -1,7 +1,5 @@
 import numpy as np
 
-import numpy as np
-
 # Global debug variable
 debug = 0
 
@@ -52,7 +50,6 @@ class Neuron:
         self.output = 1.0 if self.excitations > self.inhibitions else 0.0
         if self.output == 1.0:
             self.fire()
-        self.reset()
 
     def fire(self):
         for synapse in self.synapses:
@@ -125,7 +122,7 @@ class Network:
         # Calculate output layer deltas
         for i, neuron in enumerate(self.neurons[-1]):
             error = (1.0 if desired_output[i] else 0.0) - neuron.output
-            neuron.delta = error * self.sigmoid_derivative(neuron.excitations - neuron.inhibitions)
+            neuron.delta = error  # Remove sigmoid derivative
             if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                 print(f"Output neuron {i}: error = {error}, delta = {neuron.delta}")
 
@@ -134,7 +131,7 @@ class Network:
             for i, neuron in enumerate(self.neurons[l]):
                 neuron.delta = sum(
                     [(synapse.weight if synapse.is_excitatory else -synapse.weight) * synapse.neuron.delta for synapse in neuron.synapses]
-                ) * self.sigmoid_derivative(neuron.excitations - neuron.inhibitions)
+                )  # Remove sigmoid derivative
                 if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                     layer_type = "Input neuron" if l == 0 else "Hidden neuron"
                     print(f"{layer_type} layer {l} neuron {i}: delta = {neuron.delta}")
@@ -155,19 +152,15 @@ class Network:
                     else:
                         synapse.set_type(True)  # Set to excitatory
 
-    def sigmoid_derivative(self, z):
-        sigmoid = 1 / (1 + np.exp(-z))
-        return sigmoid * (1 - sigmoid)
-
 # Example usage
 network = Network([7, 20, 5])
 
 # Input array of booleans
 input_array = [True, False, True, False, False, True, False]
-desired_output = [True, False, True, False, True]
+desired_output = [False, True, True, False, True]
 
 # Train the network over multiple epochs
-for epoch in range(200):
+for epoch in range(1000):
     output_states = network.propagate(input_array, epoch)
     if debug == 1 or (debug > 1 and epoch % debug == 0):
         print(f"Epoch {epoch + 1}: Output states: {output_states}")
