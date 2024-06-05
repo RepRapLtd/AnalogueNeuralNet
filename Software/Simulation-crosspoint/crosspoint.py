@@ -177,25 +177,7 @@ class Network:
                 synapse.set_weight(synapse.weight * scale_factor)
                 if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                     print(f"Rescaled synapse weight: {synapse.weight}")
-'''
-# Example usage
-network = Network([7, 20, 5])
 
-# Input array of booleans
-input_array = [True, False, True, False, False, True, False]
-desired_output = [False, False, True, False, True]
-
-# Train the network over multiple epochs
-for epoch in range(1000):
-    output_states = network.propagate(input_array, epoch)
-    if debug == 1 or (debug > 1 and epoch % debug == 0):
-        print(f"Epoch {epoch + 1}: Output states: {output_states}")
-    network.backpropagate(desired_output, epoch)
-
-# Final output after training
-final_output = network.propagate(input_array)
-print(f"Final Output states: {final_output}")
-'''
 correct_count = 0
 
 # Train and evaluate the network for each desired output pattern
