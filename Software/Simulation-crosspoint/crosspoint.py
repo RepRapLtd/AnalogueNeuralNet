@@ -130,7 +130,7 @@ class Network:
 
         return output_states
 
-    def backpropagate(self, desired_output, epoch=None):
+    def backpropagate(self, desired_output, learning_rate = 0.01, epoch=None):
         if len(desired_output) != len(self.neurons[-1]):
             raise ValueError("Desired output length must match the number of output neurons.")
 
@@ -154,7 +154,6 @@ class Network:
 
         # Update the weights and potentially set the synapse type
         max_weight = float('-inf')
-        learning_rate = 0.01
         for l in range(len(self.layers) - 1):
             for neuron in self.neurons[l]:
                 for synapse in neuron.synapses:
@@ -178,6 +177,60 @@ class Network:
                 if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                     print(f"Rescaled synapse weight: {synapse.weight}")
 
+
+import numpy as np
+
+# Function to train and evaluate the network
+def train_and_evaluate(hidden_layer_size, lr, epochs):
+    # Set the random seed for reproducibility
+    np.random.seed(42)
+
+    # Generate random training data
+    training_data = {i: [bool(int(x)) for x in f'{np.random.randint(0, 4):02b}'] for i in range(8)}
+
+    # Initialize the network
+    network = Network([3, hidden_layer_size, 2])
+
+    # Train the network on the training data
+    for epoch in range(epochs):
+        for input_value, desired_output in training_data.items():
+            input_array = [bool(int(x)) for x in f'{input_value:03b}']
+            network.propagate(input_array)
+            network.backpropagate(desired_output, learning_rate = lr)
+
+    # Evaluate the network on the training data
+    correct_count = 0
+    for input_value, desired_output in training_data.items():
+        input_array = [bool(int(x)) for x in f'{input_value:03b}']
+        output_states = network.propagate(input_array)
+        if output_states == desired_output:
+            correct_count += 1
+        print(f"Input: {input_array}, Desired: {desired_output}, Output: {output_states}, Correct: {output_states == desired_output}")
+
+    print(f"Number of correct outputs out of 8: {correct_count}")
+    return correct_count
+
+# Define parameter ranges
+hidden_layer_sizes = [5, 10, 20]
+learning_rates = [0.001, 0.01, 0.1]
+epoch_counts = [1000, 5000, 10000]
+
+# Test different combinations of parameters
+best_correct_count = 0
+best_params = None
+for hls in hidden_layer_sizes:
+    for lr in learning_rates:
+        for ec in epoch_counts:
+            print(f"\nTesting with hidden_layer_size={hls}, learning_rate={lr}, epochs={ec}")
+            correct_count = train_and_evaluate(hls, lr, ec)
+            print(f"correct={correct_count}")
+            if correct_count > best_correct_count:
+                best_correct_count = correct_count
+                best_params = (hls, lr, ec)
+
+print(f"\nBest performance: {best_correct_count} correct outputs with hidden_layer_size={best_params[0]}, learning_rate={best_params[1]}, epochs={best_params[2]}")
+
+'''
 correct_count = 0
 
 # Train and evaluate the network for each desired output pattern
@@ -198,3 +251,4 @@ for desired_output_pattern in range(32):
     print(f"Desired: {desired_output}, Output: {output_states}, Correct: {output_states == desired_output}")
 
 print(f"Number of correct outputs out of 32: {correct_count}")
+'''
