@@ -8,9 +8,13 @@ np.random.seed(42)
 
 class Synapse:
     def __init__(self, neuron):
-        self.weight = np.random.uniform(0.0, 1.0)  # Initialize weights between 0 and 1
-        self.is_excitatory = np.random.choice([True, False])  # Randomly set excitatory or inhibitory
+        self.weight = np.random.uniform(0.0, 1.0)  # Initialize with a random weight
         self.neuron = neuron
+        self.is_excitatory = np.random.choice([True, False])
+        if self.is_excitatory:
+            neuron.excitatory_count += 1
+        else:
+            neuron.inhibitory_count += 1
 
     def set_weight(self, weight):
         if 0.0 <= weight <= 1.0:
@@ -25,7 +29,9 @@ class Synapse:
             self.neuron.receive_inhibition(self.weight)
 
     def set_type(self, is_excitatory):
-        self.is_excitatory = is_excitatory
+        if self.is_excitatory != is_excitatory:
+            self.neuron.update_synapse_count(is_excitatory)
+            self.is_excitatory = is_excitatory
 
 class Neuron:
     def __init__(self, layer_index, neuron_index):
@@ -36,6 +42,8 @@ class Neuron:
         self.inhibitions = 0.0
         self.output = 0.0  # Output value after activation
         self.delta = 0.0  # Used for backpropagation
+        self.excitatory_count = 0
+        self.inhibitory_count = 0
 
     def add_synapse(self, synapse):
         self.synapses.append(synapse)
@@ -46,14 +54,21 @@ class Neuron:
     def receive_inhibition(self, amount):
         self.inhibitions += amount
 
-    def check_fire(self):
-        self.output = 1.0 if self.excitations > self.inhibitions else 0.0
-        if self.output == 1.0:
-            self.fire()
+    def update_synapse_count(self, is_excitatory):
+        if is_excitatory:
+            self.excitatory_count += 1
+            self.inhibitory_count -= 1
+        else:
+            self.excitatory_count -= 1
+            self.inhibitory_count += 1
+        if debug > 0:
+            print(f"Neuron {self.layer_index}-{self.neuron_index} updated synapse count. Excitatory: {self.excitatory_count}, Inhibitory: {self.inhibitory_count}")
 
-    def fire(self):
-        for synapse in self.synapses:
-            synapse.transmit()
+    def check_fire(self):
+        self.output = self.excitations > self.inhibitions
+        if self.output:
+            for synapse in self.synapses:
+                synapse.transmit()
 
     def reset(self):
         self.excitations = 0.0
@@ -119,31 +134,31 @@ class Network:
         if len(desired_output) != len(self.neurons[-1]):
             raise ValueError("Desired output length must match the number of output neurons.")
 
-        max_weight = float('-inf')
-
         # Calculate output layer deltas
         for i, neuron in enumerate(self.neurons[-1]):
-            error = (1.0 if desired_output[i] else 0.0) - neuron.output
-            neuron.delta = error
+            error = (1.0 if desired_output[i] else 0.0) - (1.0 if neuron.output else 0.0)
+            neuron.delta = error  # Remove sigmoid derivative
             if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                 print(f"Output neuron {i}: error = {error}, delta = {neuron.delta}")
 
         # Backpropagate the error to hidden layers
+
         for l in range(len(self.layers) - 2, -1, -1):
             for i, neuron in enumerate(self.neurons[l]):
-                neuron.delta = sum(
-                    [(synapse.weight if synapse.is_excitatory else -synapse.weight) * synapse.neuron.delta for synapse in neuron.synapses]
-                )
+                neuron.delta = 0.0
+                for synapse in neuron.synapses:
+                    neuron.delta += (synapse.weight if synapse.is_excitatory else -synapse.weight) * synapse.neuron.delta
                 if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                     layer_type = "Input neuron" if l == 0 else "Hidden neuron"
                     print(f"{layer_type} layer {l} neuron {i}: delta = {neuron.delta}")
 
-        # Update the weights and track the maximum absolute weight
-        learning_rate = 0.01  # Adjusted learning rate for stability
+        # Update the weights and potentially set the synapse type
+        max_weight = float('-inf')
+        learning_rate = 0.01
         for l in range(len(self.layers) - 1):
             for neuron in self.neurons[l]:
                 for synapse in neuron.synapses:
-                    weight_change = learning_rate * neuron.output * synapse.neuron.delta
+                    weight_change = learning_rate * (1.0 if neuron.output else 0.0) * synapse.neuron.delta
                     synapse.weight += weight_change
                     abs_weight = abs(synapse.weight)
                     max_weight = max(max_weight, abs_weight)
@@ -155,17 +170,32 @@ class Network:
                         synapse.weight = abs_weight
                     else:
                         synapse.set_type(True)  # Set to excitatory
-
-        # Rescale weights to lie between 0 and 1
+       # Rescale weights to lie between 0 and 1
         scale_factor = 1.0 / max_weight
         for layer in self.synapses:
             for synapse in layer:
-                synapse.weight *= scale_factor
+                synapse.set_weight(synapse.weight * scale_factor)
                 if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                     print(f"Rescaled synapse weight: {synapse.weight}")
-
+'''
 # Example usage
+network = Network([7, 20, 5])
 
+# Input array of booleans
+input_array = [True, False, True, False, False, True, False]
+desired_output = [False, False, True, False, True]
+
+# Train the network over multiple epochs
+for epoch in range(1000):
+    output_states = network.propagate(input_array, epoch)
+    if debug == 1 or (debug > 1 and epoch % debug == 0):
+        print(f"Epoch {epoch + 1}: Output states: {output_states}")
+    network.backpropagate(desired_output, epoch)
+
+# Final output after training
+final_output = network.propagate(input_array)
+print(f"Final Output states: {final_output}")
+'''
 correct_count = 0
 
 # Train and evaluate the network for each desired output pattern
