@@ -61,11 +61,21 @@ class Neuron:
         else:
             self.excitatory_count -= 1
             self.inhibitory_count += 1
+        if self.excitatory_count < 0 or self.inhibitory_count < 0:
+            raise ValueError(f"excitatory_count {self.excitatory_count} or inhibitory_count {self.inhibitory_count} has gone negative.")
         if debug > 0:
             print(f"Neuron {self.layer_index}-{self.neuron_index} updated synapse count. Excitatory: {self.excitatory_count}, Inhibitory: {self.inhibitory_count}")
 
     def check_fire(self):
-        self.output = self.excitations > self.inhibitions
+        if self.excitatory_count > 0:
+            plus = self.excitations/self.excitatory_count
+        else:
+            plus = 0.0
+        if self.inhibitory_count > 0:
+            minus = self.inhibitions/self.inhibitory_count
+        else:
+            minus = 0.0
+        self.output = plus > minus
         if self.output:
             for synapse in self.synapses:
                 synapse.transmit()
@@ -147,7 +157,15 @@ class Network:
             for i, neuron in enumerate(self.neurons[l]):
                 neuron.delta = 0.0
                 for synapse in neuron.synapses:
-                    neuron.delta += (synapse.weight if synapse.is_excitatory else -synapse.weight) * synapse.neuron.delta
+                    if synapse.neuron.excitatory_count > 0:
+                        plus = synapse.weight/synapse.neuron.excitatory_count
+                    else:
+                        plus = 0.0
+                    if synapse.neuron.inhibitory_count > 0:
+                        minus = -synapse.weight/synapse.neuron.inhibitory_count
+                    else:
+                        minus = 0.0
+                    neuron.delta += (plus if synapse.is_excitatory else minus) * synapse.neuron.delta
                 if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                     layer_type = "Input neuron" if l == 0 else "Hidden neuron"
                     print(f"{layer_type} layer {l} neuron {i}: delta = {neuron.delta}")
@@ -177,6 +195,15 @@ class Network:
                 if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                     print(f"Rescaled synapse weight: {synapse.weight}")
 
+    def network_to_string(self):
+        result = ""
+        for layer_index, layer in enumerate(self.neurons):
+            result += f"Layer {layer_index}:\n"
+            for neuron in layer:
+                result += f"  Neuron {neuron.neuron_index}:\n"
+                for synapse in neuron.synapses:
+                    result += f"    -> Neuron {synapse.neuron.layer_index}-{synapse.neuron.neuron_index} (Weight: {synapse.weight:.4f}, {'Excitatory' if synapse.is_excitatory else 'Inhibitory'})\n"
+        return result
 
 import numpy as np
 
@@ -190,6 +217,7 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
 
     # Initialize the network
     network = Network([3, hidden_layer_size, 2])
+    print(network.network_to_string())
 
     # Train the network on the training data
     for epoch in range(epochs):
@@ -197,6 +225,8 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
             input_array = [bool(int(x)) for x in f'{input_value:03b}']
             network.propagate(input_array)
             network.backpropagate(desired_output, learning_rate = lr)
+
+    print(network.network_to_string())
 
     # Evaluate the network on the training data
     correct_count = 0
@@ -211,9 +241,9 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
     return correct_count
 
 # Define parameter ranges
-hidden_layer_sizes = [5, 10, 20]
-learning_rates = [0.001, 0.01, 0.1]
-epoch_counts = [1000, 5000, 10000]
+hidden_layer_sizes = [5]#, 10, 20]
+learning_rates = [0.001]#, 0.01, 0.1]
+epoch_counts = [1000]#, 5000, 10000]
 
 # Test different combinations of parameters
 best_correct_count = 0
