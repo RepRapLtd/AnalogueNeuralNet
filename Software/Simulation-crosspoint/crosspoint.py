@@ -205,7 +205,30 @@ class Network:
                     result += f"    -> Neuron {synapse.neuron.layer_index}-{synapse.neuron.neuron_index} (Weight: {synapse.weight:.4f}, {'Excitatory' if synapse.is_excitatory else 'Inhibitory'})\n"
         return result
 
-import numpy as np
+
+np.random.seed(42)
+
+network = Network([3, 4, 1])
+print(network.network_to_string())
+
+for epoch in range(50):
+    for i in range(4):
+        input_array = [not not i & 1, not not (i >> 1) & 1, True]
+        desired_output = [i != 3]
+        network.propagate(input_array)
+        network.backpropagate(desired_output, learning_rate = 0.1)
+
+print(network.network_to_string())
+
+for i in range(4):
+    input_array = [not not i & 1, not not (i >> 1) & 1, True]
+    desired_output = [i != 3]
+    output = network.propagate(input_array)
+    print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
+
+
+
+'''
 
 # Function to train and evaluate the network
 def train_and_evaluate(hidden_layer_size, lr, epochs):
@@ -260,7 +283,8 @@ for hls in hidden_layer_sizes:
 
 print(f"\nBest performance: {best_correct_count} correct outputs with hidden_layer_size={best_params[0]}, learning_rate={best_params[1]}, epochs={best_params[2]}")
 
-'''
+
+
 correct_count = 0
 
 # Train and evaluate the network for each desired output pattern
