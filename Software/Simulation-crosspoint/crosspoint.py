@@ -44,6 +44,8 @@ class Neuron:
         self.delta = 0.0  # Used for backpropagation
         self.excitatory_count = 0
         self.inhibitory_count = 0
+        self.plus = 0.0
+        self.minus = 0.0
 
     def add_synapse(self, synapse):
         self.synapses.append(synapse)
@@ -68,14 +70,14 @@ class Neuron:
 
     def check_fire(self):
         if self.excitatory_count > 0:
-            plus = self.excitations/self.excitatory_count
+            self.plus = self.excitations/self.excitatory_count
         else:
-            plus = 0.0
+            self.plus = 0.0
         if self.inhibitory_count > 0:
-            minus = self.inhibitions/self.inhibitory_count
+            self.minus = self.inhibitions/self.inhibitory_count
         else:
-            minus = 0.0
-        self.output = plus > minus
+            self.minus = 0.0
+        self.output = self.plus > self.minus
         if self.output:
             for synapse in self.synapses:
                 synapse.transmit()
@@ -201,18 +203,20 @@ class Network:
         for layer_index, layer in enumerate(self.neurons):
             result += f"Layer {layer_index}:\n"
             for neuron in layer:
-                result += f"  Neuron {neuron.neuron_index}, excitatory_count: {neuron.excitatory_count}, inhibitory_count: {neuron.inhibitory_count}:\n"
+                result += f"  Neuron {neuron.neuron_index}, excitatory_count: {neuron.excitatory_count}, inhibitory_count: {neuron.inhibitory_count}, "
+                result += f"delta: {neuron.delta}, plus: {neuron.plus}, minus: {neuron.minus}:\n"
                 for synapse in neuron.synapses:
                     result += f"    -> Neuron {synapse.neuron.layer_index}-{synapse.neuron.neuron_index} (Weight: {synapse.weight:.4f}, {'Excitatory' if synapse.is_excitatory else 'Inhibitory'})\n"
         return result
 
 
 np.random.seed(42)
+print("go")
 
 network = Network([2, 2, 1])
-#print(network.network_to_string())
+print(network.network_to_string())
 
-print("go")
+
 for epoch in range(5):
     for i in range(2):
         input_array = [not not i & 1, True]#, not not (i >> 1) & 1]
