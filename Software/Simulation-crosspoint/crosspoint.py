@@ -147,7 +147,7 @@ class Network:
         # Calculate output layer deltas
         for i, neuron in enumerate(self.neurons[-1]):
             error = (1.0 if desired_output[i] else 0.0) - (1.0 if neuron.output else 0.0)
-            neuron.delta = error  # Remove sigmoid derivative
+            neuron.delta = error
             if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
                 print(f"Output neuron {i}: error = {error}, delta = {neuron.delta}")
 
@@ -176,6 +176,7 @@ class Network:
             for neuron in self.neurons[l]:
                 for synapse in neuron.synapses:
                     weight_change = learning_rate * (1.0 if neuron.output else 0.0) * synapse.neuron.delta
+                    print(f"op: {neuron.output}, dw: {weight_change}")
                     synapse.weight += weight_change
                     abs_weight = abs(synapse.weight)
                     max_weight = max(max_weight, abs_weight)
@@ -200,7 +201,7 @@ class Network:
         for layer_index, layer in enumerate(self.neurons):
             result += f"Layer {layer_index}:\n"
             for neuron in layer:
-                result += f"  Neuron {neuron.neuron_index}:\n"
+                result += f"  Neuron {neuron.neuron_index}, excitatory_count: {neuron.excitatory_count}, inhibitory_count: {neuron.inhibitory_count}:\n"
                 for synapse in neuron.synapses:
                     result += f"    -> Neuron {synapse.neuron.layer_index}-{synapse.neuron.neuron_index} (Weight: {synapse.weight:.4f}, {'Excitatory' if synapse.is_excitatory else 'Inhibitory'})\n"
         return result
@@ -208,21 +209,22 @@ class Network:
 
 np.random.seed(42)
 
-network = Network([3, 4, 1])
-print(network.network_to_string())
+network = Network([2, 2, 1])
+#print(network.network_to_string())
 
-for epoch in range(50):
-    for i in range(4):
-        input_array = [not not i & 1, not not (i >> 1) & 1, True]
-        desired_output = [i != 3]
+print("go")
+for epoch in range(5):
+    for i in range(2):
+        input_array = [not not i & 1, True]#, not not (i >> 1) & 1]
+        desired_output = [not i & 1] #i != 3]
         network.propagate(input_array)
         network.backpropagate(desired_output, learning_rate = 0.1)
 
 print(network.network_to_string())
 
-for i in range(4):
-    input_array = [not not i & 1, not not (i >> 1) & 1, True]
-    desired_output = [i != 3]
+for i in range(2):
+    input_array = [not not i & 1, True]#, not not (i >> 1) & 1]
+    desired_output = [not i & 1] #i != 3]
     output = network.propagate(input_array)
     print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
 
