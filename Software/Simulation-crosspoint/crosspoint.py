@@ -44,8 +44,6 @@ class Neuron:
         self.delta = 0.0  # Used for backpropagation
         self.excitatory_count = 0
         self.inhibitory_count = 0
-        self.plus = 0.0
-        self.minus = 0.0
 
     def add_synapse(self, synapse):
         self.synapses.append(synapse)
@@ -65,19 +63,19 @@ class Neuron:
             self.inhibitory_count += 1
         if self.excitatory_count < 0 or self.inhibitory_count < 0:
             raise ValueError(f"excitatory_count {self.excitatory_count} or inhibitory_count {self.inhibitory_count} has gone negative.")
-        if debug > 0:
-            print(f"Neuron {self.layer_index}-{self.neuron_index} updated synapse count. Excitatory: {self.excitatory_count}, Inhibitory: {self.inhibitory_count}")
 
     def check_fire(self):
         if self.excitatory_count > 0:
-            self.plus = self.excitations/self.excitatory_count
+            plus = self.excitations/self.excitatory_count
         else:
-            self.plus = 0.0
+            plus = 0.0
         if self.inhibitory_count > 0:
-            self.minus = self.inhibitions/self.inhibitory_count
+            minus = self.inhibitions/self.inhibitory_count
         else:
-            self.minus = 0.0
-        self.output = self.plus > self.minus
+            minus = 0.0
+        self.output = plus > minus
+        if self.layer_index == 2:
+            print(f"plus: {plus}, minus: {minus}")
         if self.output:
             for synapse in self.synapses:
                 synapse.transmit()
@@ -96,7 +94,13 @@ class Network:
     def create_network(self):
         # Create neurons layer by layer
         for layer_index, layer_size in enumerate(self.layers):
-            layer = [Neuron(layer_index, neuron_index) for neuron_index in range(layer_size)]
+            layer = []
+            for neuron_index in range(layer_size):
+                n = Neuron(layer_index, neuron_index)
+                # Input layer neurons get data from the World, and those data are excitatory.
+                if layer_index == 0:
+                    n.excitatory_count = 1
+                layer.append(n)
             self.neurons.append(layer)
 
         # Create synapses between consecutive layers
@@ -123,7 +127,7 @@ class Network:
 
     def propagate(self, input_array, epoch=None):
         if len(input_array) != len(self.neurons[0]):
-            raise ValueError("Input array length must match the number of input neurons.")
+            raise ValueError(f"Input array length ({len(input_array)}) must match the number of input neurons ({len(self.neurons[0])}).")
 
         # Reset the network before propagation
         self.reset_network()
@@ -142,61 +146,58 @@ class Network:
 
         return output_states
 
-    def backpropagate(self, desired_output, learning_rate = 0.01, epoch=None):
+    def backpropagate(self, desired_output, learning_rate = 0.01):
         if len(desired_output) != len(self.neurons[-1]):
-            raise ValueError("Desired output length must match the number of output neurons.")
+            raise ValueError(f"Desired output length ({len(desired_output)}) must match the number of output neurons ({len(self.neurons[-1])}).")
 
         # Calculate output layer deltas
         for i, neuron in enumerate(self.neurons[-1]):
-            error = (1.0 if desired_output[i] else 0.0) - (1.0 if neuron.output else 0.0)
-            neuron.delta = error
-            if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
-                print(f"Output neuron {i}: error = {error}, delta = {neuron.delta}")
+            neuron.delta = (1.0 if desired_output[i] else 0.0) - (1.0 if neuron.output else 0.0)
 
         # Backpropagate the error to hidden layers
 
         for l in range(len(self.layers) - 2, -1, -1):
             for i, neuron in enumerate(self.neurons[l]):
-                neuron.delta = 0.0
+                plus = 0.0
+                minus = 0.0
                 for synapse in neuron.synapses:
-                    if synapse.neuron.excitatory_count > 0:
-                        plus = synapse.weight/synapse.neuron.excitatory_count
+                    if synapse.is_excitatory:
+                        plus += synapse.weight * synapse.neuron.delta
                     else:
-                        plus = 0.0
-                    if synapse.neuron.inhibitory_count > 0:
-                        minus = -synapse.weight/synapse.neuron.inhibitory_count
-                    else:
-                        minus = 0.0
-                    neuron.delta += (plus if synapse.is_excitatory else minus) * synapse.neuron.delta
-                if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
-                    layer_type = "Input neuron" if l == 0 else "Hidden neuron"
-                    print(f"{layer_type} layer {l} neuron {i}: delta = {neuron.delta}")
+                        minus += synapse.weight * synapse.neuron.delta
+                if synapse.neuron.excitatory_count > 0:
+                        plus = plus/synapse.neuron.excitatory_count
+                else:
+                    if plus != 0.0:
+                        print("Zero excitatory_count with non zero excitations.")
+                if synapse.neuron.inhibitory_count > 0:
+                        minus = minus/synapse.neuron.inhibitory_count
+                else:
+                    if minus != 0.0:
+                        print("Zero inhibitory_count with non zero inhibitions.")
+                neuron.delta = plus - minus
 
-        # Update the weights and potentially set the synapse type
+        # Update the weights and potentially change the synapse type
         max_weight = float('-inf')
         for l in range(len(self.layers) - 1):
             for neuron in self.neurons[l]:
                 for synapse in neuron.synapses:
                     weight_change = learning_rate * (1.0 if neuron.output else 0.0) * synapse.neuron.delta
-                    print(f"op: {neuron.output}, dw: {weight_change}")
                     synapse.weight += weight_change
                     abs_weight = abs(synapse.weight)
                     max_weight = max(max_weight, abs_weight)
-                    if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
-                        print(f"Synapse from neuron (layer {neuron.layer_index}, index {neuron.neuron_index}) to neuron (layer {synapse.neuron.layer_index}, index {synapse.neuron.neuron_index}): weight change = {weight_change}, new weight = {synapse.weight}")
                     # Set the type if necessary
                     if synapse.weight < 0:
                         synapse.set_type(False)  # Set to inhibitory
                         synapse.weight = abs_weight
                     else:
                         synapse.set_type(True)  # Set to excitatory
+
        # Rescale weights to lie between 0 and 1
         scale_factor = 1.0 / max_weight
         for layer in self.synapses:
             for synapse in layer:
                 synapse.set_weight(synapse.weight * scale_factor)
-                if debug == 1 or (debug > 1 and epoch is not None and epoch % debug == 0):
-                    print(f"Rescaled synapse weight: {synapse.weight}")
 
     def network_to_string(self):
         result = ""
@@ -204,7 +205,7 @@ class Network:
             result += f"Layer {layer_index}:\n"
             for neuron in layer:
                 result += f"  Neuron {neuron.neuron_index}, excitatory_count: {neuron.excitatory_count}, inhibitory_count: {neuron.inhibitory_count}, "
-                result += f"delta: {neuron.delta}, plus: {neuron.plus}, minus: {neuron.minus}:\n"
+                result += f"delta: {neuron.delta}, excitations: {neuron.excitations}, inhibitions: {neuron.inhibitions}:\n"
                 for synapse in neuron.synapses:
                     result += f"    -> Neuron {synapse.neuron.layer_index}-{synapse.neuron.neuron_index} (Weight: {synapse.weight:.4f}, {'Excitatory' if synapse.is_excitatory else 'Inhibitory'})\n"
         return result
@@ -217,7 +218,7 @@ network = Network([2, 2, 1])
 print(network.network_to_string())
 
 
-for epoch in range(5):
+for epoch in range(30):
     for i in range(2):
         input_array = [not not i & 1, True]#, not not (i >> 1) & 1]
         desired_output = [not i & 1] #i != 3]
