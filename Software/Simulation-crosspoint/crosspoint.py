@@ -74,8 +74,8 @@ class Neuron:
         else:
             minus = 0.0
         self.output = plus > minus
-        if self.layer_index == 2:
-            print(f"plus: {plus}, minus: {minus}")
+        #if self.layer_index == 2:
+        #    print(f"plus: {plus}, minus: {minus}")
         if self.output:
             for synapse in self.synapses:
                 synapse.transmit()
@@ -151,13 +151,14 @@ class Network:
             raise ValueError(f"Desired output length ({len(desired_output)}) must match the number of output neurons ({len(self.neurons[-1])}).")
 
         # Calculate output layer deltas
-        for i, neuron in enumerate(self.neurons[-1]):
-            neuron.delta = (1.0 if desired_output[i] else 0.0) - (1.0 if neuron.output else 0.0)
+        for neuron_index, neuron in enumerate(self.neurons[-1]):
+            neuron.delta = (1.0 if desired_output[neuron_index] else 0.0) - (1.0 if neuron.output else 0.0)
 
         # Backpropagate the error to hidden layers
 
-        for l in range(len(self.layers) - 2, -1, -1):
-            for i, neuron in enumerate(self.neurons[l]):
+        for layer in range(len(self.layers) - 2, -1, -1):
+            for neuron_index, neuron in enumerate(self.neurons[layer]):
+                #neuron.delta = sum([synapse.weight * synapse.neuron.delta for synapse in neuron.synapses]) * self.sigmoid_derivative(neuron.excitations - neuron.inhibitions)
                 plus = 0.0
                 minus = 0.0
                 for synapse in neuron.synapses:
@@ -175,12 +176,13 @@ class Network:
                 else:
                     if minus != 0.0:
                         print("Zero inhibitory_count with non zero inhibitions.")
-                neuron.delta = plus - minus
+                #print(f"dn: {neuron.excitations - neuron.inhibitions}, ds: {plus - minus}")
+                neuron.delta = (plus - minus)*(neuron.excitations - neuron.inhibitions)
 
         # Update the weights and potentially change the synapse type
         max_weight = float('-inf')
-        for l in range(len(self.layers) - 1):
-            for neuron in self.neurons[l]:
+        for layer in range(len(self.layers) - 1):
+            for neuron in self.neurons[layer]:
                 for synapse in neuron.synapses:
                     weight_change = learning_rate * (1.0 if neuron.output else 0.0) * synapse.neuron.delta
                     synapse.weight += weight_change
@@ -215,20 +217,44 @@ np.random.seed(42)
 print("go")
 
 network = Network([2, 2, 1])
-print(network.network_to_string())
+#print(network.network_to_string())
 
-
-for epoch in range(30):
+'''
+for epoch in range(200):
     for i in range(2):
         input_array = [not not i & 1, True]#, not not (i >> 1) & 1]
         desired_output = [not i & 1] #i != 3]
         network.propagate(input_array)
-        network.backpropagate(desired_output, learning_rate = 0.1)
+        network.backpropagate(desired_output, learning_rate = 0.01)
+'''
+
+layer = network.neurons[0]
+neuron = layer[0]
+neuron.synapses[0].weight = 1.0
+neuron.synapses[0].is_excitatory = True
+neuron.synapses[1].weight = 0.0
+neuron.synapses[1].is_excitatory = True
+neuron = layer[1]
+neuron.synapses[0].weight = 0.0
+neuron.synapses[0].is_excitatory = True
+neuron.synapses[1].weight = 1.0
+neuron.synapses[1].is_excitatory = True
+
+layer = network.neurons[1]
+neuron = layer[0]
+neuron.synapses[0].weight = 0.1
+neuron.synapses[0].is_excitatory = True
+neuron = layer[1]
+neuron.synapses[0].weight = 0.6
+neuron.synapses[0].is_excitatory = False
+
+
+
 
 print(network.network_to_string())
 
 for i in range(2):
-    input_array = [not not i & 1, True]#, not not (i >> 1) & 1]
+    input_array = [True, not not i & 1]#, not not (i >> 1) & 1]
     desired_output = [not i & 1] #i != 3]
     output = network.propagate(input_array)
     print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
