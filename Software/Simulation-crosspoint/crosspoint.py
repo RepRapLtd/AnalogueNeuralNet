@@ -77,6 +77,7 @@ class Neuron:
         #if self.layer_index == 2:
         #    print(f"plus: {plus}, minus: {minus}")
         if self.output:
+            print(f"neuron, layer {self.layer_index}, index {self.neuron_index}, fires")
             for synapse in self.synapses:
                 synapse.transmit()
 
@@ -229,25 +230,40 @@ for epoch in range(200):
 '''
 
 layer = network.neurons[0]
+
 neuron = layer[0]
 neuron.synapses[0].weight = 1.0
 neuron.synapses[0].is_excitatory = True
 neuron.synapses[1].weight = 0.0
 neuron.synapses[1].is_excitatory = True
+neuron.excitatory_count = 2
+neuron.inhibitory_count = 0
+
 neuron = layer[1]
 neuron.synapses[0].weight = 0.0
 neuron.synapses[0].is_excitatory = True
 neuron.synapses[1].weight = 1.0
 neuron.synapses[1].is_excitatory = True
+neuron.excitatory_count = 2
+neuron.inhibitory_count = 0
 
 layer = network.neurons[1]
+
 neuron = layer[0]
 neuron.synapses[0].weight = 0.1
 neuron.synapses[0].is_excitatory = True
+
 neuron = layer[1]
 neuron.synapses[0].weight = 0.6
 neuron.synapses[0].is_excitatory = False
+neuron.excitatory_count = 1
+neuron.inhibitory_count = 1
 
+layer = network.neurons[2]
+
+neuron = layer[0]
+neuron.excitatory_count = 1
+neuron.inhibitory_count = 1
 
 
 
