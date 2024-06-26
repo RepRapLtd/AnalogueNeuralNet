@@ -77,13 +77,16 @@ class Neuron:
         #if self.layer_index == 2:
         #    print(f"plus: {plus}, minus: {minus}")
         if self.output:
-            print(f"neuron, layer {self.layer_index}, index {self.neuron_index}, fires")
+            if debug:
+                print(f"neuron, layer {self.layer_index}, index {self.neuron_index}, fires")
             for synapse in self.synapses:
                 synapse.transmit()
 
     def reset(self):
         self.excitations = 0.0
         self.inhibitions = 0.0
+        self.output = False
+        self.delta = 0.0
 
 class Network:
     def __init__(self, layers):
@@ -116,6 +119,16 @@ class Network:
                     layer_synapses.append(synapse)
             self.synapses.append(layer_synapses)
 
+    def normalise_weights(self):
+       # Rescale weights to lie between 0 and 1
+        max_weight = float('-inf')
+        for layer in self.synapses:
+            for synapse in layer:
+                max_weight = max(max_weight, abs(synapse.weight))
+        scale_factor = 1.0 / max_weight
+        for layer in self.synapses:
+            for synapse in layer:
+                synapse.set_weight(synapse.weight * scale_factor)
     def reset_network(self):
         for layer in self.neurons:
             for neuron in layer:
@@ -181,26 +194,23 @@ class Network:
                 neuron.delta = (plus - minus)*(neuron.excitations - neuron.inhibitions)
 
         # Update the weights and potentially change the synapse type
-        max_weight = float('-inf')
         for layer in range(len(self.layers) - 1):
             for neuron in self.neurons[layer]:
                 for synapse in neuron.synapses:
                     weight_change = learning_rate * (1.0 if neuron.output else 0.0) * synapse.neuron.delta
-                    synapse.weight += weight_change
-                    abs_weight = abs(synapse.weight)
-                    max_weight = max(max_weight, abs_weight)
-                    # Set the type if necessary
-                    if synapse.weight < 0:
-                        synapse.set_type(False)  # Set to inhibitory
-                        synapse.weight = abs_weight
+                    if synapse.is_excitatory:
+                        new_weight = synapse.weight + weight_change
                     else:
-                        synapse.set_type(True)  # Set to excitatory
+                        new_weight = -synapse.weight + weight_change
+                    # Set the type if necessary
+                    if new_weight < 0:
+                        synapse.set_type(False)  # Set to inhibitory
+                    else:
+                        synapse.set_type(True)  # Set to inhibitory
+                    synapse.weight = abs(new_weight)
+        self.normalise_weights()
 
-       # Rescale weights to lie between 0 and 1
-        scale_factor = 1.0 / max_weight
-        for layer in self.synapses:
-            for synapse in layer:
-                synapse.set_weight(synapse.weight * scale_factor)
+
 
     def network_to_string(self):
         result = ""
@@ -220,15 +230,10 @@ print("go")
 network = Network([2, 2, 1])
 #print(network.network_to_string())
 
-'''
-for epoch in range(200):
-    for i in range(2):
-        input_array = [not not i & 1, True]#, not not (i >> 1) & 1]
-        desired_output = [not i & 1] #i != 3]
-        network.propagate(input_array)
-        network.backpropagate(desired_output, learning_rate = 0.01)
-'''
 
+
+
+'''
 layer = network.neurons[0]
 
 neuron = layer[0]
@@ -264,11 +269,32 @@ layer = network.neurons[2]
 neuron = layer[0]
 neuron.excitatory_count = 1
 neuron.inhibitory_count = 1
-
+'''
 
 
 print(network.network_to_string())
 
+debug = 1
+for i in range(2):
+    input_array = [True, not not i & 1]#, not not (i >> 1) & 1]
+    desired_output = [not i & 1] #i != 3]
+    output = network.propagate(input_array)
+    print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
+
+debug = 0
+
+print()
+for epoch in range(20):
+    for i in range(2):
+        input_array = [True, not not i & 1]#, not not (i >> 1) & 1]
+        desired_output = [not i & 1] #i != 3]
+        output = network.propagate(input_array)
+        print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
+        network.backpropagate(desired_output, learning_rate = 0.1)
+    print()
+
+print(network.network_to_string())
+debug = 1
 for i in range(2):
     input_array = [True, not not i & 1]#, not not (i >> 1) & 1]
     desired_output = [not i & 1] #i != 3]
