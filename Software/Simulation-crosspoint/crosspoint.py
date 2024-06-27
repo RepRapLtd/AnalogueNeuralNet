@@ -3,8 +3,6 @@ import numpy as np
 # Global debug variable
 debug = 0
 
-# Set the random seed for reproducibility
-np.random.seed(42)
 
 class Synapse:
     def __init__(self, neuron):
@@ -184,12 +182,12 @@ class Network:
                         plus = plus/synapse.neuron.excitatory_count
                 else:
                     if plus != 0.0:
-                        print("Zero excitatory_count with non zero excitations.")
+                        print(f"Zero excitatory_count with non zero excitations ({plus}).")
                 if synapse.neuron.inhibitory_count > 0:
                         minus = minus/synapse.neuron.inhibitory_count
                 else:
                     if minus != 0.0:
-                        print("Zero inhibitory_count with non zero inhibitions.")
+                        print(f"Zero inhibitory_count with non zero inhibitions ({minus}).")
                 #print(f"dn: {neuron.excitations - neuron.inhibitions}, ds: {plus - minus}")
                 neuron.delta = (plus - minus)*(neuron.excitations - neuron.inhibitions)
 
@@ -225,79 +223,26 @@ class Network:
 
 
 np.random.seed(42)
-print("go")
-
-network = Network([2, 2, 1])
-#print(network.network_to_string())
-
-
-
 
 '''
-layer = network.neurons[0]
+network = Network([3, 4, 1])
 
-neuron = layer[0]
-neuron.synapses[0].weight = 1.0
-neuron.synapses[0].is_excitatory = True
-neuron.synapses[1].weight = 0.0
-neuron.synapses[1].is_excitatory = True
-neuron.excitatory_count = 2
-neuron.inhibitory_count = 0
-
-neuron = layer[1]
-neuron.synapses[0].weight = 0.0
-neuron.synapses[0].is_excitatory = True
-neuron.synapses[1].weight = 1.0
-neuron.synapses[1].is_excitatory = True
-neuron.excitatory_count = 2
-neuron.inhibitory_count = 0
-
-layer = network.neurons[1]
-
-neuron = layer[0]
-neuron.synapses[0].weight = 0.1
-neuron.synapses[0].is_excitatory = True
-
-neuron = layer[1]
-neuron.synapses[0].weight = 0.6
-neuron.synapses[0].is_excitatory = False
-neuron.excitatory_count = 1
-neuron.inhibitory_count = 1
-
-layer = network.neurons[2]
-
-neuron = layer[0]
-neuron.excitatory_count = 1
-neuron.inhibitory_count = 1
-'''
-
-
-print(network.network_to_string())
-
-debug = 1
-for i in range(2):
-    input_array = [True, not not i & 1]#, not not (i >> 1) & 1]
-    desired_output = [not i & 1] #i != 3]
-    output = network.propagate(input_array)
-    print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
 
 debug = 0
 
 print()
-for epoch in range(20):
-    for i in range(2):
-        input_array = [True, not not i & 1]#, not not (i >> 1) & 1]
-        desired_output = [not i & 1] #i != 3]
+for epoch in range(50):
+    for i in range(4):
+        input_array = [True, not not i & 1, not not (i >> 1) & 1]
+        desired_output = [i != 3]
         output = network.propagate(input_array)
-        print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
         network.backpropagate(desired_output, learning_rate = 0.1)
-    print()
 
 print(network.network_to_string())
-debug = 1
-for i in range(2):
-    input_array = [True, not not i & 1]#, not not (i >> 1) & 1]
-    desired_output = [not i & 1] #i != 3]
+
+for i in range(4):
+    input_array = [True, not not i & 1, not not (i >> 1) & 1]
+    desired_output = [i != 3]
     output = network.propagate(input_array)
     print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
 
@@ -320,7 +265,11 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
     # Train the network on the training data
     for epoch in range(epochs):
         for input_value, desired_output in training_data.items():
-            input_array = [bool(int(x)) for x in f'{input_value:03b}']
+            input_array = []
+            k = input_value
+            for i in range(3):
+                input_array.append(bool(k & 1))
+                k = k >> 1
             network.propagate(input_array)
             network.backpropagate(desired_output, learning_rate = lr)
 
@@ -329,7 +278,11 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
     # Evaluate the network on the training data
     correct_count = 0
     for input_value, desired_output in training_data.items():
-        input_array = [bool(int(x)) for x in f'{input_value:03b}']
+        input_array = []
+        k = input_value
+        for i in range(3):
+            input_array.append(bool(k & 1))
+            k = k >> 1
         output_states = network.propagate(input_array)
         if output_states == desired_output:
             correct_count += 1
@@ -340,7 +293,7 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
 
 # Define parameter ranges
 hidden_layer_sizes = [5]#, 10, 20]
-learning_rates = [0.001]#, 0.01, 0.1]
+learning_rates = [0.1]#[0.001, 0.01, 0.1]
 epoch_counts = [1000]#, 5000, 10000]
 
 # Test different combinations of parameters
@@ -359,7 +312,7 @@ for hls in hidden_layer_sizes:
 print(f"\nBest performance: {best_correct_count} correct outputs with hidden_layer_size={best_params[0]}, learning_rate={best_params[1]}, epochs={best_params[2]}")
 
 
-
+'''
 correct_count = 0
 
 # Train and evaluate the network for each desired output pattern
