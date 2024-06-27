@@ -96,7 +96,12 @@ class Network:
     def create_network(self):
         # Create neurons layer by layer
         for layer_index, layer_size in enumerate(self.layers):
-            layer = []
+            if layer_index == 0:
+                n = Neuron(layer_index, -1)
+                n.excitatory_count = 1
+                layer = [n]
+            else:
+                layer = []
             for neuron_index in range(layer_size):
                 n = Neuron(layer_index, neuron_index)
                 # Input layer neurons get data from the World, and those data are excitatory.
@@ -138,16 +143,19 @@ class Network:
                 neuron.check_fire()
 
     def propagate(self, input_array, epoch=None):
-        if len(input_array) != len(self.neurons[0]):
+        if len(input_array) != len(self.neurons[0]) - 1:
             raise ValueError(f"Input array length ({len(input_array)}) must match the number of input neurons ({len(self.neurons[0])}).")
 
         # Reset the network before propagation
         self.reset_network()
 
+        # First input is always true
+        self.neurons[0][0].receive_excitation(1.0)
+
         # Fire the input neurons corresponding to TRUE in the input array
         for i, state in enumerate(input_array):
             if state:
-                self.neurons[0][i].receive_excitation(1.0)  # Assuming maximum excitation
+                self.neurons[0][i+1].receive_excitation(1.0)  # Assuming maximum excitation
 
         # Check if all neurons should fire
         self.check_fire_all()
