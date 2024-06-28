@@ -1,8 +1,25 @@
+# Simulation of the crosspoint neural network architecture
+#
+# This program builds, trains, and uses neural networks of
+# different sizes for different tasks. It's classes mirror the
+# electronics for the crosspoint neural network, and so it
+# will also be able to download its taught patterns of weights
+# into that hardware.
+#
+# Written by Adrian Bowyer and GPT-4o
+#
+# RepRap Ltd
+# https://reprapltd.com
+#
+# Licence: GPL
+#
+
 import numpy as np
 
-# Global debug variable
-debug = 0
-
+# Neurons drive other neurons via synapses. This is the synapse class. When a neuron
+# fires with synapses as its outputs this sends its weight value to the neuron
+# that it drives, which is the argument to its initialization function. Synapses can
+# be excitatory or inhibitory.
 
 class Synapse:
     def __init__(self, neuron):
@@ -30,6 +47,15 @@ class Synapse:
         if self.is_excitatory != is_excitatory:
             self.neuron.update_synapse_count(is_excitatory)
             self.is_excitatory = is_excitatory
+
+
+# This is the class for a single neuron. Neurons are in layers, and they record which layer they're in
+# and their index in that layer for administrative purposes. These values take no part in the network when
+# it's running. Each neuron has a list of synapses that it drives when it fires. It also records excitations
+# and inhibitions - these are the sum of the inputs from the synapses that drive this neuron. If excitations
+# exceed inhibitions the neuron fires. The neuron also knows how many excitatory and inhibitory inputs
+# it has. It uses these numbers to average the excitations and inhibitions numbers, because this is
+# the way that the electronics being modelled works.
 
 class Neuron:
     def __init__(self, layer_index, neuron_index):
@@ -62,6 +88,9 @@ class Neuron:
         if self.excitatory_count < 0 or self.inhibitory_count < 0:
             raise ValueError(f"excitatory_count {self.excitatory_count} or inhibitory_count {self.inhibitory_count} has gone negative.")
 
+    # This is the function that sees if this neuron fires, and - if it does - sends signals
+    # along all its synapses to the neurons it drives.
+
     def check_fire(self):
         if self.excitatory_count > 0:
             plus = self.excitations/self.excitatory_count
@@ -75,8 +104,6 @@ class Neuron:
         #if self.layer_index == 2:
         #    print(f"plus: {plus}, minus: {minus}")
         if self.output:
-            if debug:
-                print(f"neuron, layer {self.layer_index}, index {self.neuron_index}, fires")
             for synapse in self.synapses:
                 synapse.transmit()
 
@@ -85,6 +112,13 @@ class Neuron:
         self.inhibitions = 0.0
         self.output = False
         self.delta = 0.0
+
+
+# This is the class that models the whole network. It is initialised with an array like
+# [3, 5, 2], which means that there are three input neurons, five in a hidden layer, and
+# 2 outputs. There can be any number of hidden layers. One extra "hidden" neuron is added
+# to the input layer that always fires. This allows the network to produce a defined
+# output when there is a zero input.
 
 class Network:
     def __init__(self, layers):
@@ -96,6 +130,7 @@ class Network:
     def create_network(self):
         # Create neurons layer by layer
         for layer_index, layer_size in enumerate(self.layers):
+            # The hidden neuron in layer 0 that's always on.
             if layer_index == 0:
                 n = Neuron(layer_index, -1)
                 n.excitatory_count = 1
@@ -122,6 +157,7 @@ class Network:
                     layer_synapses.append(synapse)
             self.synapses.append(layer_synapses)
 
+# Rescale all the weights so that they lie between 0 and 1.
     def normalise_weights(self):
        # Rescale weights to lie between 0 and 1
         max_weight = float('-inf')
@@ -157,7 +193,7 @@ class Network:
             if state:
                 self.neurons[0][i+1].receive_excitation(1.0)  # Assuming maximum excitation
 
-        # Check if all neurons should fire
+        # Propagate firing through the network
         self.check_fire_all()
 
         # Get the state of the output layer
@@ -178,7 +214,6 @@ class Network:
 
         for layer in range(len(self.layers) - 2, -1, -1):
             for neuron_index, neuron in enumerate(self.neurons[layer]):
-                #neuron.delta = sum([synapse.weight * synapse.neuron.delta for synapse in neuron.synapses]) * self.sigmoid_derivative(neuron.excitations - neuron.inhibitions)
                 plus = 0.0
                 minus = 0.0
                 for synapse in neuron.synapses:
@@ -189,14 +224,11 @@ class Network:
                 if synapse.neuron.excitatory_count > 0:
                         plus = plus/synapse.neuron.excitatory_count
                 else:
-                    if plus != 0.0:
-                        print(f"Zero excitatory_count with non zero excitations ({plus}).")
+                    plus = 0
                 if synapse.neuron.inhibitory_count > 0:
                         minus = minus/synapse.neuron.inhibitory_count
                 else:
-                    if minus != 0.0:
-                        print(f"Zero inhibitory_count with non zero inhibitions ({minus}).")
-                #print(f"dn: {neuron.excitations - neuron.inhibitions}, ds: {plus - minus}")
+                    minus = 0
                 neuron.delta = (plus - minus)*(neuron.excitations - neuron.inhibitions)
 
         # Update the weights and potentially change the synapse type
@@ -217,7 +249,7 @@ class Network:
         self.normalise_weights()
 
 
-
+# Network as a printable string
     def network_to_string(self):
         result = ""
         for layer_index, layer in enumerate(self.neurons):
@@ -230,45 +262,14 @@ class Network:
         return result
 
 
-np.random.seed(42)
-
-'''
-network = Network([3, 4, 1])
-
-
-debug = 0
-
-print()
-for epoch in range(50):
-    for i in range(4):
-        input_array = [True, not not i & 1, not not (i >> 1) & 1]
-        desired_output = [i != 3]
-        output = network.propagate(input_array)
-        network.backpropagate(desired_output, learning_rate = 0.1)
-
-print(network.network_to_string())
-
-for i in range(4):
-    input_array = [True, not not i & 1, not not (i >> 1) & 1]
-    desired_output = [i != 3]
-    output = network.propagate(input_array)
-    print(f"input: {input_array}, desired: {desired_output} gives {output[0]}")
-
-
-
-'''
-
-# Function to train and evaluate the network
-def train_and_evaluate(hidden_layer_size, lr, epochs):
-    # Set the random seed for reproducibility
-    np.random.seed(42)
+# Function to test training and evaluating a network
+def train_and_evaluate(layers, learning_rate, epochs, report):
 
     # Generate random training data
     training_data = {i: [bool(int(x)) for x in f'{np.random.randint(0, 4):02b}'] for i in range(8)}
 
     # Initialize the network
-    network = Network([3, hidden_layer_size, 2])
-    print(network.network_to_string())
+    network = Network(layers)
 
     # Train the network on the training data
     for epoch in range(epochs):
@@ -279,9 +280,7 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
                 input_array.append(bool(k & 1))
                 k = k >> 1
             network.propagate(input_array)
-            network.backpropagate(desired_output, learning_rate = lr)
-
-    print(network.network_to_string())
+            network.backpropagate(desired_output, learning_rate)
 
     # Evaluate the network on the training data
     correct_count = 0
@@ -294,51 +293,16 @@ def train_and_evaluate(hidden_layer_size, lr, epochs):
         output_states = network.propagate(input_array)
         if output_states == desired_output:
             correct_count += 1
-        print(f"Input: {input_array}, Desired: {desired_output}, Output: {output_states}, Correct: {output_states == desired_output}")
+        if report:
+            print(f"Input: {input_array}, Desired: {desired_output}, Output: {output_states} - {('correct' if output_states == desired_output else 'wrong')}")
+    if report:
+        print(f"Number of correct outputs out of 8: {correct_count}")
+    return network
 
-    print(f"Number of correct outputs out of 8: {correct_count}")
-    return correct_count
+# Run the test
 
-# Define parameter ranges
-hidden_layer_sizes = [5]#, 10, 20]
-learning_rates = [0.1]#[0.001, 0.01, 0.1]
-epoch_counts = [1000]#, 5000, 10000]
-
-# Test different combinations of parameters
-best_correct_count = 0
-best_params = None
-for hls in hidden_layer_sizes:
-    for lr in learning_rates:
-        for ec in epoch_counts:
-            print(f"\nTesting with hidden_layer_size={hls}, learning_rate={lr}, epochs={ec}")
-            correct_count = train_and_evaluate(hls, lr, ec)
-            print(f"correct={correct_count}")
-            if correct_count > best_correct_count:
-                best_correct_count = correct_count
-                best_params = (hls, lr, ec)
-
-print(f"\nBest performance: {best_correct_count} correct outputs with hidden_layer_size={best_params[0]}, learning_rate={best_params[1]}, epochs={best_params[2]}")
+np.random.seed(42167319)
+layers = [3, 9, 2]
+network = train_and_evaluate(layers, 0.01, 2000, True)
 
 
-'''
-correct_count = 0
-
-# Train and evaluate the network for each desired output pattern
-for desired_output_pattern in range(32):
-    network = Network([7, 20, 5])  # Reinitialize the network for each pattern
-    input_array = [True, False, True, False, False, True, False]
-    desired_output = [bool(int(x)) for x in f'{desired_output_pattern:05b}']
-
-    # Train the network on the current desired output pattern
-    for epoch in range(100):
-        network.propagate(input_array, epoch)
-        network.backpropagate(desired_output, epoch)
-
-    # Evaluate the network on the current desired output pattern
-    output_states = network.propagate(input_array)
-    if output_states == desired_output:
-        correct_count += 1
-    print(f"Desired: {desired_output}, Output: {output_states}, Correct: {output_states == desired_output}")
-
-print(f"Number of correct outputs out of 32: {correct_count}")
-'''
