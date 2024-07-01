@@ -178,7 +178,7 @@ class Network:
             for neuron in layer:
                 neuron.check_fire()
 
-    def propagate(self, input_array, epoch=None):
+    def propagate(self, input_array):
         if len(input_array) != len(self.neurons[0]) - 1:
             raise ValueError(f"Input array length ({len(input_array)}) must match the number of input neurons ({len(self.neurons[0])}).")
 
@@ -221,14 +221,14 @@ class Network:
                         plus += synapse.weight * synapse.neuron.delta
                     else:
                         minus += synapse.weight * synapse.neuron.delta
-                if synapse.neuron.excitatory_count > 0:
+                    if synapse.neuron.excitatory_count > 0:
                         plus = plus/synapse.neuron.excitatory_count
-                else:
-                    plus = 0
-                if synapse.neuron.inhibitory_count > 0:
+                    else:
+                        plus = 0
+                    if synapse.neuron.inhibitory_count > 0:
                         minus = minus/synapse.neuron.inhibitory_count
-                else:
-                    minus = 0
+                    else:
+                        minus = 0
                 neuron.delta = (plus - minus)*(neuron.excitations - neuron.inhibitions)
 
         # Update the weights and potentially change the synapse type
@@ -298,11 +298,12 @@ def train_and_evaluate(layers, learning_rate, epochs, report):
     if report:
         print(f"Number of correct outputs out of 8: {correct_count}")
     return network
-
+'''
 # Run the test
 
-np.random.seed(42167319)
-layers = [3, 9, 2]
+np.random.seed(42298365)
+layers = [3, 10, 2]
 network = train_and_evaluate(layers, 0.01, 2000, True)
+'''
 
 
