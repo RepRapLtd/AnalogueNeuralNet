@@ -1,9 +1,9 @@
+import os
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import numpy as np
 import string
-import os
 
-def generate_8x8_images(font_path, output_dir='images'):
+def generate_8x8_images(font_path, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -39,6 +39,11 @@ def generate_8x8_images(font_path, output_dir='images'):
             scaling_factor = min(8 / bbox_width, 8 / bbox_height)
             new_size = (int(bbox_width * scaling_factor), int(bbox_height * scaling_factor))
 
+            # Check for zero width or height after resizing
+            if new_size[0] == 0 or new_size[1] == 0:
+                print(f"Abandoning font {font_path} due to zero width or height for letter '{letter}'")
+                return False
+
             # Resize the cropped image to fit within 8x8
             resized_image = high_res_image.resize(new_size, Image.LANCZOS)
 
@@ -60,7 +65,49 @@ def generate_8x8_images(font_path, output_dir='images'):
             # Convert to numpy array
             images[letter] = np.array(thresholded_image)
 
-    return images
+    return True
 
-font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"  # Example path
-images = generate_8x8_images(font_path)
+def supports_roman_letters(font_path):
+    try:
+        font = ImageFont.truetype(font_path, 64)
+        for letter in string.ascii_lowercase:
+            if not font.getmask(letter).getbbox():
+                return False
+        return True
+    except:
+        return False
+
+def process_fonts(font_dir, output_base_dir):
+    # Get a list of all ttf files in the font directory
+    font_files = []
+    for root, _, files in os.walk(font_dir):
+        for file in files:
+            if file.endswith('.ttf'):
+                font_files.append(os.path.join(root, file))
+
+    # Create the output base directory if it doesn't exist
+    if not os.path.exists(output_base_dir):
+        os.makedirs(output_base_dir)
+
+    # List to store the relative paths of generated image folders
+    folders_list = []
+
+    # Process each font file
+    for font_file in font_files:
+        if supports_roman_letters(font_file):
+            font_name = os.path.splitext(os.path.basename(font_file))[0]
+            output_dir = os.path.join(output_base_dir, font_name)
+            if generate_8x8_images(font_file, output_dir):
+                folders_list.append(os.path.relpath(output_dir, start=output_base_dir))
+
+    # Write the list of folders to a text file
+    with open(os.path.join(output_base_dir, 'font_folders.txt'), 'w') as f:
+        for folder in folders_list:
+            f.write(folder + '\n')
+
+# Define the font directory and output directory
+font_dir = '/usr/share/fonts/truetype'
+output_base_dir = 'font_images'
+
+# Process the fonts and generate the image sets
+process_fonts(font_dir, output_base_dir)
